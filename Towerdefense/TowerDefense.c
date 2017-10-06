@@ -5,14 +5,19 @@
 
 int main()
 {
-	cm **tab = malloc(sizeof(*tab) *17);
 	int i;
 	SDL_Surface *screen , *temp,*herbe;
+	FILE* testfichier = fopen("test" , "r");
+	int t;
+	for (i=0 ; i<26 ; i++)
+		{
+			t = fgetc(testfichier);
+			printf("teste %d: %d\n",i+1,t);
+		}
 	SDL_Rect position;
 	position.x = 0;
 	position.y = 0;
-	for (i=0 ; i <17; i++)
-		tab[i] = malloc(sizeof(**tab) * 17);
+
 
 
 	SDL_Init(SDL_INIT_VIDEO);
@@ -30,7 +35,18 @@ int main()
 			}
 	SDL_UpdateRect(screen, 0, 0, 0, 0);
 	sleep(1);
-	free(*tab);
+
+
+
+	cm **carte = malloc(sizeof(carte) *17);
+
+	for (i=0 ; i <17; i++)
+		carte[i] = malloc(sizeof(*carte) * 17);
+
+	for (i=0 ; i <17; i++)
+		free(carte[i]);
+	fclose(testfichier);
+	free(carte);
 	SDL_FreeSurface(screen);
 
 	return EXIT_SUCCESS;
