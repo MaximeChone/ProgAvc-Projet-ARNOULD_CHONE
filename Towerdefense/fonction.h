@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-enum case_type {HERBE , MONTAGNE , CHEMIN_H , CHEMIN_V , CHEMIN_BG , CHEMIN_BD , CHEMIN_HG , CHEMIN_HD , DEBUT , FIN};
+enum case_type {HERBE , MONTAGNE , CHEMIN , EAU , DEBUT , FIN};
 
 typedef enum case_type case_type;
 
@@ -18,3 +18,6 @@ struct case_map
 };
 
 typedef struct case_map cm;
+
+void lectureNiveau(cm **carte);
+void afficheMap(SDL_Surface **TabImageCase,cm **carte,SDL_Surface *screen);
