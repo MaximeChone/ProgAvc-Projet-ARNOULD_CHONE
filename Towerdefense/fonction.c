@@ -2,8 +2,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
-#include "fonction.h"
 #include <SDL_ttf.h>
+#include "struct.h"
 #define PI 3.14159265358979323846
 
 void lectureNiveau(cm **carte)
@@ -15,16 +15,17 @@ void lectureNiveau(cm **carte)
 	tab1[i] = t;
 	while (t != EOF)
 		{
-			t = fgetc(fichier);	
+			t = fgetc(fichier);
 			if (t !=10)
 				{
 					i++;
 					tab1[i]= t;
 				}
 		}
-	for (i=0 ; i<17*17-1 ; i++)
+	for (i=0 ; i<17*17 ; i++)
 		{
-			if (tab1[i] == 101)
+			printf("bonjour%d\n\n",i);
+			if (tab1[i] == 101)		
 				carte[i/17][i%17].type = 3;
 			if (tab1[i] == 100)
 				carte[i/17][i%17].type = 4;
@@ -36,8 +37,11 @@ void lectureNiveau(cm **carte)
 				carte[i/17][i%17].type = 5;
 			if (tab1[i] == 104)
 				carte[i/17][i%17].type = 0;
+			
 		}
-	fclose(fichier);
+	printf("bonjour4\n\n");
+      	fclose(fichier);
+	printf("bonjour5\n\n");
 }
 
 void afficheMap(SDL_Surface **TabImageCase,cm **carte,SDL_Surface *screen)
