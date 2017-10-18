@@ -24,7 +24,7 @@ void lectureNiveau(cm **carte)
 		}
 	for (i=0 ; i<17*17 ; i++)
 		{
-			printf("bonjour%d\n\n",i);
+			//Determine le type des cases
 			if (tab1[i] == 101)		
 				carte[i/17][i%17].type = 3;
 			if (tab1[i] == 100)
@@ -37,11 +37,14 @@ void lectureNiveau(cm **carte)
 				carte[i/17][i%17].type = 5;
 			if (tab1[i] == 104)
 				carte[i/17][i%17].type = 0;
-			
+			//Détermine les positions des cases et des tours
+			carte[i/17][i%17].tr.active = 0;
+			carte[i/17][i%17].y = (i/17)*48;
+			carte[i/17][i%17].x = (i%17)*48;
+			carte[i/17][i%17].tr.y = (i%17)*48;
+			carte[i/17][i%17].tr.x = (i%17)*48;
 		}
-	printf("bonjour4\n\n");
       	fclose(fichier);
-	printf("bonjour5\n\n");
 }
 
 void afficheMap(SDL_Surface **TabImageCase,cm **carte,SDL_Surface *screen)
@@ -54,8 +57,8 @@ void afficheMap(SDL_Surface **TabImageCase,cm **carte,SDL_Surface *screen)
 		{
 			for (int j = 0; j<17 ; j++)
 				{
-						position.x = i*48;
-						position.y = j*48;
+						position.x = carte[i][j].x;
+						position.y = carte[i][j].y;
 						if (carte[i][j].type == 0)
 							image = TabImageCase[0];
 						if (carte[i][j].type == 1)
@@ -68,8 +71,6 @@ void afficheMap(SDL_Surface **TabImageCase,cm **carte,SDL_Surface *screen)
 							image = TabImageCase[4];
 						if (carte[i][j].type == 5)
 							image = TabImageCase[5];
-						position.x = j*48;
-						position.y = i*48;
 						SDL_BlitSurface(image, NULL, screen, &position);
 				}
 		}
