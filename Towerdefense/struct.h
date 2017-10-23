@@ -8,7 +8,7 @@ struct tower
 	unsigned int NiveauTour; //Niveau de la tour
 	int dmg; //Dégat infligé par la tour
 	int x;
-      	int y;
+  	int y;
 	int active; //Si la tour existe ou non
 };
 
@@ -16,11 +16,11 @@ typedef struct tower tower;
 
 struct case_map
 {
-      	int x;
+  	int x;
 	int y;
 	case_type type;       //type du sol
 	int occupe;           //si la case est occupé
-      	tower tr;           //la tour sur la case
+  	tower tr;           //la tour sur la case
 };
 
 

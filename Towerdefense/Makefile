@@ -1,7 +1,7 @@
 SRC=TowerDefense.c
 BIN=TowerDefense
 
-$(BIN): $(SRC)
+$(BIN): $(SRC) fonction.o
 	gcc $(SRC) fonction.o -Wall -g -std=c99 `sdl-config --cflags --libs`  -lm -o $(BIN)
 
 fonction.o: fonction.c 

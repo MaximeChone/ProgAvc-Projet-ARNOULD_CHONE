@@ -32,13 +32,14 @@ int main()
 	lectureNiveau(carte);
 	afficheMap(TabImageCase ,carte , screen);
 	SDL_UpdateRect(screen, 0, 0, 0, 0);
-
+	int testfunction = verifChemin(carte);
+	printf("%d\n",testfunction);
 
 	sleep(3);
 
 
 
-
+	
 	///Libération mémoire///
 	for (i=0 ; i < 17; i++)
 		free(carte[i]);
