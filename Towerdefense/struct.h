@@ -20,7 +20,7 @@ struct case_map
 	int y;
 	case_type type;       //type du sol
 	int occupe;           //si la case est occupé
-  	tower tr;           //la tour sur la case
+  	tower tr;             //la tour sur la case
 };
 
 

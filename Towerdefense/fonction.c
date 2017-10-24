@@ -47,9 +47,9 @@ void lectureNiveau(cm **carte)
       	fclose(fichier);
 }
 
-void afficheMap(SDL_Surface **TabImageCase,cm **carte,SDL_Surface *screen)
+void afficheMap(SDL_Surface **TabImageCase,cm **carte,SDL_Surface *screen , SDL_Surface *image)
 {
-	SDL_Surface *image;
+
 	SDL_Rect position;
 	position.x = 0;
 	position.y = 0;
@@ -71,10 +71,11 @@ void afficheMap(SDL_Surface **TabImageCase,cm **carte,SDL_Surface *screen)
 							image = TabImageCase[4];
 						if (carte[i][j].type == 5)
 							image = TabImageCase[5];
-						SDL_BlitSurface(image, NULL, screen, &position);
+					       	SDL_BlitSurface(image, NULL, screen, &position);
+
 				}
 		}
-	SDL_FreeSurface(image);
+
 }
 
 
@@ -132,7 +133,6 @@ int verifChemin(cm **carte)
 						{
 							if (!(((carte[i-1][j].type == 2 && carte[i+1][j].type != 2 && carte[i][j+1].type != 2 && carte[i][j-1].type != 2) || (carte[i-1][j].type != 2 && carte[i+1][j].type == 2 && carte[i][j+1].type != 2 && carte[i][j-1].type != 2) || (carte[i-1][j].type != 2 && carte[i+1][j].type != 2 && carte[i][j+1].type == 2 && carte[i][j-1].type != 2) || (carte[i-1][j].type != 2 && carte[i+1][j].type != 2 && carte[i][j+1].type != 2 && carte[i][j-1].type == 2)) && d == 0))
 								{
-									printf("test1\n");
 									return 0;
 								}
 							else 
@@ -144,38 +144,31 @@ int verifChemin(cm **carte)
 						{
 							if (carte[i-1][j].type == 2 && carte[i+1][j].type != 2 && carte[i][j+1].type != 2 && carte[i][j-1].type != 2)
 								{
-									printf("1er%d\n",f);
 								}
 							if (carte[i-1][j].type != 2 && carte[i+1][j].type == 2 && carte[i][j+1].type != 2 && carte[i][j-1].type != 2)
 								{
-									printf("2eme\n");
 								}
 							if (carte[i-1][j].type != 2 && carte[i+1][j].type != 2 && carte[i][j+1].type == 2 && carte[i][j-1].type != 2)
 								{
-									printf("3eme\n");
 								}
 							if (carte[i-1][j].type != 2 && carte[i+1][j].type != 2 && carte[i][j+1].type != 2 && carte[i][j-1].type == 2)
 								{
-									printf("4eme\n");
 								}
 							if (!(((carte[i-1][j].type == 2 && carte[i+1][j].type != 2 && carte[i][j+1].type != 2 && carte[i][j-1].type != 2) || (carte[i-1][j].type != 2 && carte[i+1][j].type == 2 && carte[i][j+1].type != 2 && carte[i][j-1].type != 2) || (carte[i-1][j].type != 2 && carte[i+1][j].type != 2 && carte[i][j+1].type == 2 && carte[i][j-1].type != 2) || (carte[i-1][j].type != 2 && carte[i+1][j].type != 2 && carte[i][j+1].type != 2 && carte[i][j-1].type == 2)) && f == 0))
 								{
-									printf("test2\n");
 									return 0;
 								}
 							else 
 								{
-									printf("test4\n");
 									f = 1;
 								}
 						}
 					if (carte[i][j].type == 2)
 						{
 							if (!(sous_verifchemin_1(carte , i , j) || sous_verifchemin_2(carte, i , j) ||	sous_verifchemin_3(carte, i , j) || sous_verifchemin_4(carte, i , j) || sous_verifchemin_5(carte, i , j) || sous_verifchemin_6(carte, i , j)))
-							{
-								printf("test3\n");	
-								return 0;
-							}
+								{
+									return 0;
+								}
 						}
 				}
 		}
@@ -185,7 +178,57 @@ int verifChemin(cm **carte)
 
 
 
+void evenement_clavier(char* keys,int *gameover)
+{
+	SDL_Event event;
+	while(SDL_PollEvent(&event)) {
+		switch (event.type) {
+		case SDL_QUIT:
+			*gameover = 1;
+			break;
+		case SDL_KEYUP:
+			keys[event.key.keysym.sym] = 0;
+			break;
+		case SDL_KEYDOWN:
+			switch (event.key.keysym.sym) {
+			case SDLK_ESCAPE:
+				*gameover = 1;
+				break;
+			default:
+				break;
+			}
+			keys[event.key.keysym.sym] = 1;
+			break;
+		}
+	}
+		
+}
 
+void evenement_verifClavier(char* key, int *d)
+{
+	SDLKey tabkey[2] = {SDLK_LEFT,SDLK_RIGHT}; 
+	
+	for(int i=0;i<1;i++)
+		{
+			if (key[tabkey[0]] == 1)
+				{
+					*d = *d-1;
+					if (*d < 0)
+						{
+							*d = 0;
+						}
+				}
+			if (key[tabkey[1]] == 1)
+				{
+					*d = *d + 1;
+					if (*d > 30)
+						{
+							*d = 30;
+						}
+				}
+						
+		}
+}
 
 
 

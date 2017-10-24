@@ -6,9 +6,11 @@
 int main()
 {
 	int i;
-	SDL_Surface *screen;
+	int gameover = 0;
+	SDL_Surface *screen , *image ;
 	SDL_Surface *TabImageCase[6];
-
+	int d = 1;
+	char key[SDLK_LAST] = {0};
 	SDL_Init(SDL_INIT_VIDEO);
 	
 	SDL_WM_SetCaption("Tower Defense", "Tower Defense");
@@ -23,27 +25,37 @@ int main()
 	TabImageCase[3]=SDL_DisplayFormat(SDL_LoadBMP("eau.bmp"));
 	TabImageCase[4]=SDL_DisplayFormat(SDL_LoadBMP("chemin.bmp"));
 	TabImageCase[5]=SDL_DisplayFormat(SDL_LoadBMP("chemin.bmp"));
+	image = TabImageCase[0];
 	
+
 	cm **carte = malloc(sizeof(struct case_map*) *17);
 
 	for (i=0 ; i <17; i++)
 		carte[i] = malloc(sizeof(struct case_map) * 17);
-    
+ 
 	lectureNiveau(carte);
-	afficheMap(TabImageCase ,carte , screen);
-	SDL_UpdateRect(screen, 0, 0, 0, 0);
-	int testfunction = verifChemin(carte);
-	printf("%d\n",testfunction);
+	int chemin = verifChemin(carte);
+	while (gameover != 1 && chemin == 1)
+		{
+			evenement_clavier(key,&gameover);
+			evenement_verifClavier(key,&d);
+			afficheMap(TabImageCase ,carte , screen , image);
+			SDL_UpdateRect(screen, 0, 0, 0, 0);
+			SDL_Delay(d);
+			printf("%d\n");
+		}
 
-	sleep(3);
 
+
+	printf("%d\n",chemin);
 
 
 	
 	///Libération mémoire///
 	for (i=0 ; i < 17; i++)
 		free(carte[i]);
-	free(carte);		
+	free(carte);
+	SDL_FreeSurface(image);
 	SDL_FreeSurface(screen);
 
 	return EXIT_SUCCESS;
