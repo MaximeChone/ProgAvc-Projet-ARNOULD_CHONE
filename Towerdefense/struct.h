@@ -30,3 +30,21 @@ struct case_map
 
 
 typedef struct case_map cm;
+
+
+enum ennemi_type {SOLDAT , TANK};
+
+typedef enum ennemi_type ennemi_type;
+
+struct ennemi
+{
+	coor c;	//coordonnées de l'ennemie
+	int pv;	//point de vie de l'ennemie
+	int armure;// armure de l'ennemie
+	int active;//si l'ennemie existe ou non
+	ennemi_type type; //type d'ennemie
+};
+
+typedef struct ennemi enn;
+
+

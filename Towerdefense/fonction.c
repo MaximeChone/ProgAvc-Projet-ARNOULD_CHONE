@@ -208,31 +208,27 @@ void defchemin(cm **carte , int i , int j , char sens , coor *chemin , int compt
 
 			if (carte[i-1][j].type == 2)
 				{
-					printf("d1\n");
 					chemin[compteurChemin].x = carte[i][j].c.x;
 					chemin[compteurChemin].y = carte[i][j].c.y;
-					return defchemin(carte ,i-1 ,j , 'b' , chemin , compteurChemin + 1);
+					defchemin(carte ,i-1 ,j , 'b' , chemin , compteurChemin + 1);
 				}
 			if (carte[i+1][j].type == 2)
 				{
-					printf("d2\n");
 					chemin[compteurChemin].x = carte[i][j].c.x;
 					chemin[compteurChemin].y = carte[i][j].c.y;
-					return defchemin(carte ,i+1 ,j , 'h' , chemin , compteurChemin + 1);
+					defchemin(carte ,i+1 ,j , 'h' , chemin , compteurChemin + 1);
 				}
 			if (carte[i][j-1].type == 2)
 				{
-					printf("d3\n");
 					chemin[compteurChemin].x = carte[i][j].c.x;
 					chemin[compteurChemin].y = carte[i][j].c.y;
-					return defchemin(carte ,i ,j-1 , 'd' , chemin , compteurChemin + 1);
+					defchemin(carte ,i ,j-1 , 'd' , chemin , compteurChemin + 1);
 				}
 			if (carte[i][j+1].type == 2)
 				{
-					printf("d4\n");
 					chemin[compteurChemin].x = carte[i][j].c.x;
 					chemin[compteurChemin].y = carte[i][j].c.y;
-					return defchemin(carte ,i ,j+1 , 'g' , chemin , compteurChemin + 1);
+					defchemin(carte ,i ,j+1 , 'g' , chemin , compteurChemin + 1);
 				}
 		}
 	if (carte[i][j].type == 5)
@@ -249,28 +245,28 @@ void defchemin(cm **carte , int i , int j , char sens , coor *chemin , int compt
 					printf("c1\n");
 					chemin[compteurChemin].x = carte[i][j].c.x;
 					chemin[compteurChemin].y = carte[i][j].c.y;
-					return defchemin(carte ,i-1 ,j , 'b' , chemin , compteurChemin + 1);
+					defchemin(carte ,i-1 ,j , 'b' , chemin , compteurChemin + 1);
 				}
 			if ((carte[i+1][j].type == 2 || carte[i+1][j].type == 5) && sens !='b')
 				{
 					printf("c2\n");
 					chemin[compteurChemin].x = carte[i][j].c.x;
 					chemin[compteurChemin].y = carte[i][j].c.y;
-					return defchemin(carte ,i+1 ,j , 'h' , chemin , compteurChemin + 1);
+					defchemin(carte ,i+1 ,j , 'h' , chemin , compteurChemin + 1);
 				}
 			if ((carte[i][j-1].type == 2 || carte[i][j-1].type == 5) && sens !='g')
 				{
 					printf("c3\n");
 					chemin[compteurChemin].x = carte[i][j].c.x;
 					chemin[compteurChemin].y = carte[i][j].c.y;
-					return defchemin(carte ,i ,j-1 , 'd' , chemin , compteurChemin + 1);
+					defchemin(carte ,i ,j-1 , 'd' , chemin , compteurChemin + 1);
 				}
 			if ((carte[i][j+1].type == 2 || carte[i][j+1].type == 5) && sens != 'd')
 				{
 					printf("c4\n");
 					chemin[compteurChemin].x = carte[i][j].c.x;
 					chemin[compteurChemin].y = carte[i][j].c.y;
-					return defchemin(carte , i , j+1 , 'g' , chemin , compteurChemin +1);
+					defchemin(carte , i , j+1 , 'g' , chemin , compteurChemin +1);
 				}
 		}
 }
@@ -327,7 +323,16 @@ void evenement_verifClavier(char* key, int *d)
 		}
 }
 
-
+void init_ennemis(enn *ennemis)
+{
+	for (int i=0 ; i< 200 ; i++)
+	{
+	    ennemis[i].active = 0;
+	    ennemis[i].c.x = -1;
+	    ennemis[i].c.y = -1;
+	}
+}
+	  
 
 
 

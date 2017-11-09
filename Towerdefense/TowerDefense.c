@@ -49,7 +49,6 @@ int main()
 			printf("%d\n",d);
 		}
 
-
 	i = 0;
 	while (chemin[i].x != -1)
 		{

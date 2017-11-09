@@ -13,4 +13,5 @@ int emplacementDebut(cm **carte);
 void defchemin(cm **carte , int i , int j , char sens , coor *chemin , int compteurChemin);
 void evenement_verifClavier(char* key,int *d);
 void evenement_clavier(char* keys,int *gameover);
+void init_ennemis(enn *ennemis);
 
