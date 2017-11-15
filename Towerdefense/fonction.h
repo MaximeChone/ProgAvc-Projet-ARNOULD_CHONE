@@ -14,4 +14,14 @@ void defchemin(cm **carte , int i , int j , char sens , coor *chemin , int compt
 void evenement_verifClavier(char* key,int *d);
 void evenement_clavier(char* keys,int *gameover);
 void init_ennemis(enn *ennemis);
+void ennemi_moove(enn *ennemi , coor *chemin);
+void ennemis_moove(enn *ennemi , coor *chemin);
+void affichage_ennemi(enn *ennemis , SDL_Surface **tab_image_ennemis , SDL_Surface *screen);
+void anim_ennemi_haut(enn *ennemi);
+void anim_ennemi_bas(enn *ennemi);
+void anim_ennemi_droite(enn *ennemi);
+void anim_ennemi_gauche(enn *ennemi);
+void spawn_soldat(enn *ennemis , coor lieu);
+void spawn_tour(tower *tour);
+void affichage_tour(SDL_Surface **tab_image_tour , cm **carte , SDL_Surface *screen);
 
