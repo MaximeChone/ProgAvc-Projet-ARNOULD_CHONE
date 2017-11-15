@@ -76,7 +76,7 @@ int main()
 	SDL_FreeSurface(temp5);
 	SDL_FreeSurface(temp6);
 	SDL_FreeSurface(temp7);
-    SDL_Quit();
+	SDL_Quit();
 	return EXIT_SUCCESS;
 }
 	

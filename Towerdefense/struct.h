@@ -4,8 +4,8 @@ typedef enum case_type case_type;
 
 struct coord
 {
-	int x;
-	int y;
+	float x;
+	float y;
 };
 
 typedef struct coord coor;
@@ -55,6 +55,8 @@ struct shoot
 	coor c; //coordonnées du tir
 	int cible; //cible du tir
 	int v;// vitesse du tir
+	int dmg; //dégats du tir
+	int active; //si le tir existe ou non
 };
 
 typedef struct shoot sh;

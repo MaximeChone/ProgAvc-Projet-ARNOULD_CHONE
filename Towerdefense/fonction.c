@@ -299,7 +299,7 @@ void evenement_verifClavier(char* key, int *d)
 		{
 			if (key[tabkey[0]] == 1)
 				{
-					*d = *d-1;
+					*d = *d-2;
 					if (*d < 1)
 						{
 							*d = 1;
@@ -307,7 +307,7 @@ void evenement_verifClavier(char* key, int *d)
 				}
 			if (key[tabkey[1]] == 1)
 				{
-					*d = *d + 1;
+					*d = *d + 2;
 					if (*d > 100)
 						{
 							*d =100;
@@ -466,7 +466,7 @@ void anim_ennemi_gauche(enn *ennemi)
 void spawn_soldat(enn *ennemis , coor lieu)
 {
 	int i = 0;
-	while (i > 200 || ennemis[i].active != 0)
+	while (i < 200 && ennemis[i].active != 0)
 	{
 		i++;
 	}
@@ -517,4 +517,64 @@ void affichage_tour(SDL_Surface **tab_image_tour , cm **carte , SDL_Surface *scr
 		}
 }
 
+void init_tirs(sh *tirs)
+{
+  for (int i = 0 ; i < 500 ; i++)
+  {
+      tirs[i].active = 0;
+      tirs[i].c.x = 0;
+      tirs[i].c.y = 0;
+      tirs[i].cible = 0;
+      tirs[i].v = 0;
+      tirs[i].dmg = 0;
+  }
+}
 
+void spawn_tir(sh *tirs , int cible , tower *tour)
+{
+  int i=0;
+  while (i < 500 && tirs[i].active != 0)
+  {
+	  i++;
+  }
+      tirs[i].active = 1;
+      tirs[i].c.x = tour->c.x;
+      tirs[i].c.y = tour->c.y;
+      tirs[i].cible = cible;
+      tirs[i].v = 1;
+      tirs[i].dmg = tour->dmg;
+}
+
+void supp_tour(tower *tour)
+{
+  tour->active = 0;
+  tour->dmg = 0;
+  tour->level = 0;
+}
+
+void supp_ennemi(enn *ennemi)
+{
+  ennemi->active = 0;
+  ennemi->type = 0;
+  ennemi->c.x = 0;
+  ennemi->c.y = 0;
+  ennemi->anim = 0;
+  ennemi->chem = 0;
+  ennemi->v = 0;
+  ennemi->pv = 0;
+  ennemi->pa = 0;
+}
+
+void supp_tir(sh *tir)
+{
+  tir->active = 0;
+  tir->c.x = 0;
+  tir->c.y = 0;
+  tir->cible = 0;
+  tir->v = 0;
+  tir->dmg = 0;
+}
+
+void tir_moove(sh *tir , enn *enemis)
+{
+}
