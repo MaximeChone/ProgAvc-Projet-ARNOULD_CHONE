@@ -16,6 +16,11 @@ struct tower
 	int dmg; //Dégat infligé par la tour
 	coor c; //coordonnées de la case
 	int active; //Si la tour existe ou non
+	int taille_sprite;
+	int anim;
+	int range;
+	int cooldown;
+	int timer;
 };
 
 typedef struct tower tower;
@@ -26,6 +31,9 @@ struct case_map
 	case_type type;       //type du sol
 	int occupe;           //si la case est occupé
   	tower tr;             //la tour sur la case
+	int taille_sprite;
+	int anim;
+
 };
 
 
@@ -46,6 +54,7 @@ struct ennemi
 	int chem; //positon sur le chemin
 	int v; //vitesse de l'ennemi
 	int anim;//animation actuelle
+	int taille_sprite;
 };
 
 typedef struct ennemi enn;
@@ -57,6 +66,8 @@ struct shoot
 	int v;// vitesse du tir
 	int dmg; //dégats du tir
 	int active; //si le tir existe ou non
+	int taille_sprite;
+	int anim;
 };
 
 typedef struct shoot sh;

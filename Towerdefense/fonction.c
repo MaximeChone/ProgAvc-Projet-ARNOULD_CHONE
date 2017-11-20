@@ -38,11 +38,14 @@ void lectureNiveau(cm **carte)
 			if (tab1[i] == 104)
 				carte[i/17][i%17].type = 0;
 			//Détermine les positions des cases et des tours
-			carte[i/17][i%17].tr.active = 0;
 			carte[i/17][i%17].c.y = (i/17)*48;
 			carte[i/17][i%17].c.x = (i%17)*48;
 			carte[i/17][i%17].tr.c.y = (i/17)*48;
 			carte[i/17][i%17].tr.c.x = (i%17)*48;
+			carte[i/17][i%17].tr.active = 0;
+			carte[i/17][i%17].anim = 0;
+			carte[i/17][i%17].taille_sprite = 48;
+		
 		}
   	fclose(fichier);
 }
@@ -51,6 +54,7 @@ void afficheMap(SDL_Surface **TabImageCase,cm **carte,SDL_Surface *screen)
 {
 
 	SDL_Rect position;
+	SDL_Rect image;
 	int temp;
 	position.x = 0;
 	position.y = 0;
@@ -58,8 +62,21 @@ void afficheMap(SDL_Surface **TabImageCase,cm **carte,SDL_Surface *screen)
 		{
 			for (int j = 0; j<17 ; j++)
 				{
+						if (carte[i][j].type == 4 || carte[i][j].type == 5)
+						{
+							carte[i][j].anim += 1;
+							if (carte[i][j].anim > 3)
+								{
+									carte[i][j].anim = 0;
+								}						
+						}
+						
 						position.x = carte[i][j].c.x;
 						position.y = carte[i][j].c.y;
+						image.y = 0;
+						image.h = carte[i][j].taille_sprite;
+						image.w = carte[i][j].taille_sprite;
+						image.x = carte[i][j].taille_sprite * carte[i][j].anim;
 						if (carte[i][j].type == 0)
 							temp = 0;
 						if (carte[i][j].type == 1)
@@ -72,7 +89,7 @@ void afficheMap(SDL_Surface **TabImageCase,cm **carte,SDL_Surface *screen)
 							temp = 4;
 						if (carte[i][j].type == 5)
 							temp = 5;
-				       	SDL_BlitSurface(TabImageCase[temp], NULL, screen, &position);
+				       	SDL_BlitSurface(TabImageCase[temp], &image, screen, &position);
 
 				}
 		}
@@ -193,6 +210,19 @@ int emplacementDebut(cm **carte)
 			for (int j = 0;j<17 ; j++)
 				{
 					if (carte[i][j].type == 4)
+						return 17*i + j;
+				}
+		}
+	return 0;
+}
+
+int emplacementFin(cm **carte)
+{
+	for (int i=0 ; i<17 ; i++)
+		{
+			for (int j = 0;j<17 ; j++)
+				{
+					if (carte[i][j].type == 5)
 						return 17*i + j;
 				}
 		}
@@ -322,8 +352,6 @@ void init_ennemis(enn *ennemis)
 	for (int i=0 ; i< 200 ; i++)
 	{
 	    ennemis[i].active = 0;
-	    ennemis[i].c.x = -1;
-	    ennemis[i].c.y = -1;
 	}
 }
 	  
@@ -399,9 +427,9 @@ void affichage_ennemi(enn *ennemis , SDL_Surface **tab_image_ennemis , SDL_Surfa
 				position.x = ennemis[i].c.x;
 				position.y = ennemis[i].c.y;
 				image.y = 0;
-				image.w = 48;
-				image.h = 48;
-				image.x = 48 * ennemis[i].anim;
+				image.w = ennemis[i].taille_sprite;
+				image.h = ennemis[i].taille_sprite;
+				image.x = ennemis[i].taille_sprite * ennemis[i].anim;
 				colorkey = SDL_MapRGB(screen->format, 255, 0, 255);
 				if (ennemis[i].type == 0)
 					temp = 0;
@@ -477,15 +505,20 @@ void spawn_soldat(enn *ennemis , coor lieu)
 	ennemis[i].anim = 0;
 	ennemis[i].chem = 0;
 	ennemis[i].v = 2;
-	ennemis[i].pv = 1;
+	ennemis[i].pv = 50;
 	ennemis[i].pa = 0;
+	ennemis[i].taille_sprite = 48;
 }
 
-void spawn_tour(tower *tour)
+void spawn_tour_lvl_1(tower *tour)
 {
 	tour->active = 1;
 	tour->dmg = 1;
 	tour->level = 1;
+	tour->taille_sprite = 48;
+	tour->anim = 0;
+	tour->range = 200;
+	tour->cooldown = 20;
 }
 
 void affichage_tour(SDL_Surface **tab_image_tour , cm **carte , SDL_Surface *screen)
@@ -496,18 +529,18 @@ void affichage_tour(SDL_Surface **tab_image_tour , cm **carte , SDL_Surface *scr
 	int temp;
 	position.x = 0;
 	position.y = 0;
-	for (int i = 1; i > 16 ; i++)
+	for (int i = 1; i < 16 ; i++)
 		{
-			for (int j = 1 ; i > 16 ; j++)
+			for (int j = 1 ; j < 16 ; j++)
 				{
 						if (carte[i][j].tr.active == 1)
 						{
-							position.x = carte[i][j].c.x;
-							position.y = carte[i][j].c.y;
+							position.x = carte[i][j].tr.c.x;
+							position.y = carte[i][j].tr.c.y;
 							image.y = 0;
-							image.w = 48;
-							image.h = 48;
-							image.x = 48;
+							image.w = carte[i][j].tr.taille_sprite;
+							image.h = carte[i][j].tr.taille_sprite;
+							image.x = carte[i][j].tr.anim * carte[i][j].tr.taille_sprite;
 							colorkey = SDL_MapRGB(screen->format, 255, 0, 255);
 							temp = 0;
 							SDL_SetColorKey(tab_image_tour[temp], SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
@@ -522,11 +555,6 @@ void init_tirs(sh *tirs)
   for (int i = 0 ; i < 500 ; i++)
   {
       tirs[i].active = 0;
-      tirs[i].c.x = 0;
-      tirs[i].c.y = 0;
-      tirs[i].cible = 0;
-      tirs[i].v = 0;
-      tirs[i].dmg = 0;
   }
 }
 
@@ -537,12 +565,14 @@ void spawn_tir(sh *tirs , int cible , tower *tour)
   {
 	  i++;
   }
-      tirs[i].active = 1;
-      tirs[i].c.x = tour->c.x;
-      tirs[i].c.y = tour->c.y;
-      tirs[i].cible = cible;
-      tirs[i].v = 1;
-      tirs[i].dmg = tour->dmg;
+	tirs[i].active = 1;
+	tirs[i].c.x = tour->c.x;
+	tirs[i].c.y = tour->c.y;
+	tirs[i].cible = cible;
+	tirs[i].v = 3;
+	tirs[i].dmg = tour->dmg;
+	tirs[i].taille_sprite = 8;
+	tour->timer = 0;
 }
 
 void supp_tour(tower *tour)
@@ -550,6 +580,8 @@ void supp_tour(tower *tour)
   tour->active = 0;
   tour->dmg = 0;
   tour->level = 0;
+tour->anim = 0;
+tour->taille_sprite = 0;
 }
 
 void supp_ennemi(enn *ennemi)
@@ -563,18 +595,128 @@ void supp_ennemi(enn *ennemi)
   ennemi->v = 0;
   ennemi->pv = 0;
   ennemi->pa = 0;
+	ennemi->taille_sprite = 0;
 }
 
 void supp_tir(sh *tir)
 {
-  tir->active = 0;
-  tir->c.x = 0;
-  tir->c.y = 0;
-  tir->cible = 0;
-  tir->v = 0;
-  tir->dmg = 0;
+	tir->active = 0;
+	tir->c.x = 0;
+	tir->c.y = 0;
+	tir->cible = 0;
+	tir->v = 0;
+	tir->dmg = 0;
+	tir->anim = 0;
+	tir->taille_sprite = 0;
 }
 
-void tir_moove(sh *tir , enn *enemis)
+void tir_moove(sh *tir , enn *ennemis)
 {
+	if (ennemis[tir->cible].active == 0)
+		supp_tir(tir);
+	float angle = (atan2((ennemis[tir->cible].c.y + ennemis[tir->cible].taille_sprite/2 - tir->taille_sprite/2) - (tir->c.y),(ennemis[tir->cible].c.x+ ennemis[tir->cible].taille_sprite/2 - tir->taille_sprite/2) - (tir->c.x) )/PI)*180;
+ 	angle = 0 - angle;
+	if (angle < 0 )
+		angle += 360;
+	tir->c.x += tir->v*(cos(PI * ((angle)/180.0)));
+	tir->c.y += tir->v*(-sin(PI * ((angle)/180.0)));
+	if ((fabs(tir->c.x - (ennemis[tir->cible].c.x+ ennemis[tir->cible].taille_sprite/2 - tir->taille_sprite/2)) <= tir->v) && (fabs(tir->c.y - (ennemis[tir->cible].c.y + ennemis[tir->cible].taille_sprite/2 - tir->taille_sprite/2)) <= tir->v))
+		{
+			damage(tir->dmg , &ennemis[tir->cible]);
+			supp_tir(tir);
+		}
+}
+
+void tirs_moove(sh *tirs , enn *ennemis)
+{
+	for (int i = 0; i < 500 ; i++)
+		{
+			if (tirs[i].active == 1)
+				{
+					tir_moove(&tirs[i] , ennemis);
+				}
+		}
+}
+void affichage_tir(SDL_Surface **tab_image_tir , sh *tir , SDL_Surface *screen)
+{
+
+	SDL_Rect position;
+	SDL_Rect image;
+	int colorkey;
+	int temp;
+	position.x = 0;
+	position.y = 0;
+	for (int i = 0; i < 500 ; i++)
+		{
+			if (tir[i].active == 1)
+			{
+				position.x = tir[i].c.x;
+				position.y = tir[i].c.y;
+				image.y = 0;
+				image.w = tir[i].taille_sprite;
+				image.h = tir[i].taille_sprite;
+				image.x = tir[i].taille_sprite * tir[i].anim;
+				colorkey = SDL_MapRGB(screen->format, 255, 126, 0);
+				temp = 0;
+				SDL_SetColorKey(tab_image_tir[temp], SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
+			   	SDL_BlitSurface(tab_image_tir[temp], &image, screen, &position);
+
+			}
+		}
+
+}
+
+void damage(int dmg , enn *ennemi)
+{
+	dmg -= ennemi->pa;
+	if (dmg > 0)
+		ennemi->pv -= dmg;
+}
+
+void check_vie(enn *ennemis)
+{
+	for (int i = 0 ; i < 200 ; i++)
+	{
+		if(ennemis[i].active == 1 && ennemis[i].pv <= 0)
+		{
+			supp_ennemi(&ennemis[i]);
+		}
+	}
+}
+
+void check_range(cm **carte , enn *ennemis , sh *tirs)
+{
+	for (int i = 1 ; i < 16 ; i++)
+	{
+		for (int j = 1 ; j < 16 ; j++)
+		{
+			if (carte[i][j].tr.active == 1)
+			{
+				for (int x = 0 ; x < 200 ; x++)
+				{
+					if (ennemis[x].active == 1)
+					{
+						if (sqrt(pow(carte[i][j].tr.c.x - ennemis[x].c.x, 2) + pow(carte[i][j].tr.c.y - ennemis[x].c.y, 2)) <= carte[i][j].tr.range)
+						{
+							if (carte[i][j].tr.timer >= carte[i][j].tr.cooldown)
+							{
+								spawn_tir(tirs ,x , &carte[i][j].tr);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void timer_tours(cm **carte)
+{
+	for (int i = 1 ; i < 16 ; i++)
+	{
+		for (int j = 1 ; j < 16 ; j++)
+		{
+			carte[i][j].tr.timer += 1;
+		}
+	}
 }
