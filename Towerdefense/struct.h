@@ -48,6 +48,7 @@ struct ennemi
 {
 	coor c;	//coordonnées de l'ennemi
 	int pv;	//point de vie de l'ennemi
+	int pv_max;
 	int pa;// armure de l'ennemi
 	int active;//si l'ennemie existe ou non
 	ennemi_type type; //type d'ennemi

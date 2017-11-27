@@ -1,21 +1,22 @@
-#include <SDL.h>
-#include <math.h>
 #include "fonction.h"
-#define PI 3.14159265358979323846
+#include <SDL_ttf.h>
 
-int main()
+int main(int argc,  char *argv[])
 {
 	int i;
 	int gameover = 0;
-	SDL_Surface *screen , *temp , *temp2 , *temp3,*temp4,*temp5 , *temp6 , *temp7 , *temp8 , *temp9;
+	SDL_Surface *screen , *temp , *temp2 , *temp3,*temp4,*temp5 , *temp6 , *temp7 , *temp8 , *temp9 , *cursor_image , *fond_image;
 	SDL_Surface *TabImageCase[6];
 	SDL_Surface *tab_image_ennemis[2];
 	SDL_Surface *tab_image_tir[1];
 	SDL_Surface *tab_image_tour[1];
+
 	int d = 50;
 	char key[SDLK_LAST] = {0};
 
 	coor chemin[127];
+	coor cursor = {0,0};
+
 	ini_chemin(chemin);
 
 	enn ennemis[200];
@@ -23,12 +24,18 @@ int main()
 
 	sh tirs[500];
 	init_tirs(tirs);
-	
-	SDL_Init(SDL_INIT_VIDEO);
-	screen = SDL_SetVideoMode(816 ,816 , 0, 0);
-	SDL_WM_SetCaption("Tower Defense", "Tower Defense");
-	
 
+	TTF_Init();
+	SDL_Init(SDL_INIT_VIDEO);
+	//SDL_ShowCursor(SDL_DISABLE);
+	SDL_WM_SetCaption("Tower Defense", "Tower Defense");
+
+
+	TTF_Font *police = TTF_OpenFont("police.ttf" , 20);
+	
+	screen = SDL_SetVideoMode(1000 ,816 , 0, 0);
+	cursor_image = SDL_DisplayFormat(SDL_LoadBMP("cursor.bmp"));
+	fond_image = SDL_DisplayFormat(SDL_LoadBMP("fond_info.bmp"));
 	temp = SDL_LoadBMP("herbe.bmp");
 	TabImageCase[0]=SDL_DisplayFormat(temp);
 	temp2 = SDL_LoadBMP("montagne.bmp");
@@ -45,38 +52,55 @@ int main()
 	tab_image_ennemis[0] = SDL_DisplayFormat(temp7);
 	temp8 = SDL_LoadBMP("bullet.bmp");
 	tab_image_tir[0] = SDL_DisplayFormat(temp8);
-	temp9 = SDL_LoadBMP("tourelle1.bmp");
+	temp9 = SDL_LoadBMP("tower_1.bmp");
 	tab_image_tour[0] = SDL_DisplayFormat(temp9);
 	
 	cm **carte = malloc(sizeof(struct case_map*) *17);
-
+	cm *select = NULL;
 	for (i=0 ; i <17; i++)
+	{
 		carte[i] = malloc(sizeof(struct case_map) * 17);
+	}
 
 	lectureNiveau(carte);
 
 	int possible_chemin = verifChemin(carte);
 	defchemin(carte , emplacementDebut(carte)/17 , emplacementDebut(carte)%17 ,'e',chemin ,0);
 	spawn_soldat(ennemis , chemin[0]);
-	spawn_tour_lvl_1(&carte[15][15].tr);
+	spawn_tour_lvl_1(&carte[12][6].tr);
+	spawn_tour_lvl_1(&carte[13][6].tr);
+
+	SDL_Color color = {255,255,255};
 	while (gameover != 1 && possible_chemin == 1)
 		{
-			evenement_clavier(key,&gameover);
-			evenement_verifClavier(key,&d);
+			evenement_clavier(key,&gameover,&cursor , &select , carte);
+			if (select != NULL)
+				printf("x = %f , y = %f\n",select->c.x , select->c.y);
+			evenement_verifClavier(key,&d,ennemis ,chemin[0]);
+
+			affichage_fond_info_case(fond_image , screen);
 			afficheMap(TabImageCase ,carte , screen);
 			affichage_ennemi(ennemis , tab_image_ennemis , screen);
 			affichage_tir(tab_image_tir , tirs , screen);
 			affichage_tour(tab_image_tour , carte , screen);
+
+	 		barre_vie_ennemis(ennemis , screen);
+
+			//affichage_cursor(cursor_image ,cursor , screen);
+			ecrire_info_case_select(select , police  , screen ,color );
+
 			check_range(carte , ennemis ,tirs);
+
 			timer_tours(carte);
+
 			ennemis_moove(ennemis , chemin);
 			tirs_moove(tirs , ennemis);
+
 			check_vie(ennemis);
+
 			SDL_UpdateRect(screen, 0, 0, 0, 0);
 			SDL_Delay(d);
 		}
-
-	i = 0;
 
 	///Libération mémoire///
 	for (i=0 ; i < 17; i++)
@@ -84,6 +108,7 @@ int main()
 	free(carte);
 	for (i=0 ; i < 6; i++)
 		SDL_FreeSurface(TabImageCase[i]);
+
 	SDL_FreeSurface(screen);
 	SDL_FreeSurface(temp);
 	SDL_FreeSurface(temp2);
@@ -94,6 +119,8 @@ int main()
 	SDL_FreeSurface(temp7);
 	SDL_FreeSurface(temp8);
 	SDL_FreeSurface(temp9);
+	TTF_CloseFont(police);
+	TTF_Quit();
 	SDL_Quit();
 	return EXIT_SUCCESS;
 }

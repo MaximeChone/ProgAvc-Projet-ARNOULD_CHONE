@@ -1,10 +1,4 @@
-#include <SDL.h>
-#include <math.h>
-#include <stdlib.h>
-#include <time.h>
-#include <SDL_ttf.h>
 #include "fonction.h"
-#define PI 3.14159265358979323846
 
 void lectureNiveau(cm **carte)
 {
@@ -295,7 +289,7 @@ void defchemin(cm **carte , int i , int j , char sens , coor *chemin , int compt
 		}
 }
 
-void evenement_clavier(char* keys,int *gameover)
+void evenement_clavier(char* keys,int *gameover,coor *cursor , cm **select , cm **carte)
 {
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {
@@ -316,14 +310,30 @@ void evenement_clavier(char* keys,int *gameover)
 			}
 			keys[event.key.keysym.sym] = 1;
 			break;
+		case SDL_MOUSEBUTTONDOWN:
+			switch (event.button.button){
+			case SDL_BUTTON_LEFT:
+				if (event.button.x <= 816 && event.button.y <=816)
+				{
+					selection(carte , event.button.x , event.button.y , select);
+				}
+				break;
+			case SDL_BUTTON_RIGHT:
+				deselection(select);
+				break;
+			}
+			break;
+		case SDL_MOUSEMOTION:
+			cursor->x = event.motion.x;
+			cursor->y = event.motion.y;
+			break;
 		}
 	}
-		
 }
 
-void evenement_verifClavier(char* key, int *d)
+void evenement_verifClavier(char* key, int *d,enn *ennemis , coor lieu)
 {
-	SDLKey tabkey[2] = {SDLK_LEFT,SDLK_RIGHT}; 
+	SDLKey tabkey[3] = {SDLK_LEFT,SDLK_RIGHT,SDLK_UP}; 
 	
 	for(int i=0;i<1;i++)
 		{
@@ -343,6 +353,10 @@ void evenement_verifClavier(char* key, int *d)
 							*d =100;
 						}
 				}
+			if (key[tabkey[2]] == 1)
+			{
+					spawn_soldat(ennemis, lieu);
+			}
 						
 		}
 }
@@ -505,7 +519,8 @@ void spawn_soldat(enn *ennemis , coor lieu)
 	ennemis[i].anim = 0;
 	ennemis[i].chem = 0;
 	ennemis[i].v = 2;
-	ennemis[i].pv = 50;
+	ennemis[i].pv = 4;
+	ennemis[i].pv_max = 4;
 	ennemis[i].pa = 0;
 	ennemis[i].taille_sprite = 48;
 }
@@ -566,12 +581,13 @@ void spawn_tir(sh *tirs , int cible , tower *tour)
 	  i++;
   }
 	tirs[i].active = 1;
-	tirs[i].c.x = tour->c.x;
-	tirs[i].c.y = tour->c.y;
+	tirs[i].taille_sprite = 18;
+	tirs[i].c.x = tour->c.x + tour->taille_sprite/2 - tirs[i].taille_sprite/2;
+	tirs[i].c.y = tour->c.y + tour->taille_sprite/2 - tirs[i].taille_sprite/2;
 	tirs[i].cible = cible;
-	tirs[i].v = 3;
+	tirs[i].v = 5;
 	tirs[i].dmg = tour->dmg;
-	tirs[i].taille_sprite = 8;
+
 	tour->timer = 0;
 }
 
@@ -596,6 +612,7 @@ void supp_ennemi(enn *ennemi)
   ennemi->pv = 0;
   ennemi->pa = 0;
 	ennemi->taille_sprite = 0;
+	ennemi->pv_max = 0;
 }
 
 void supp_tir(sh *tir)
@@ -614,13 +631,11 @@ void tir_moove(sh *tir , enn *ennemis)
 {
 	if (ennemis[tir->cible].active == 0)
 		supp_tir(tir);
-	float angle = (atan2((ennemis[tir->cible].c.y + ennemis[tir->cible].taille_sprite/2 - tir->taille_sprite/2) - (tir->c.y),(ennemis[tir->cible].c.x+ ennemis[tir->cible].taille_sprite/2 - tir->taille_sprite/2) - (tir->c.x) )/PI)*180;
- 	angle = 0 - angle;
-	if (angle < 0 )
-		angle += 360;
+	float angle = calcul_angle_tir(tir->c.x , tir->c.y , ennemis[tir->cible].c.x , ennemis[tir->cible].c.y , tir->taille_sprite , ennemis[tir->cible].taille_sprite);
+	anim_tir(tir);
 	tir->c.x += tir->v*(cos(PI * ((angle)/180.0)));
 	tir->c.y += tir->v*(-sin(PI * ((angle)/180.0)));
-	if ((fabs(tir->c.x - (ennemis[tir->cible].c.x+ ennemis[tir->cible].taille_sprite/2 - tir->taille_sprite/2)) <= tir->v) && (fabs(tir->c.y - (ennemis[tir->cible].c.y + ennemis[tir->cible].taille_sprite/2 - tir->taille_sprite/2)) <= tir->v))
+	if (sqrt(pow(tir->c.x - (ennemis[tir->cible].c.x + ennemis[tir->cible].taille_sprite/2 - tir->taille_sprite/2), 2) + pow(tir->c.y - (ennemis[tir->cible].c.y  + ennemis[tir->cible].taille_sprite/2 - tir->taille_sprite/2), 2)) <= tir->v)
 		{
 			damage(tir->dmg , &ennemis[tir->cible]);
 			supp_tir(tir);
@@ -656,7 +671,7 @@ void affichage_tir(SDL_Surface **tab_image_tir , sh *tir , SDL_Surface *screen)
 				image.w = tir[i].taille_sprite;
 				image.h = tir[i].taille_sprite;
 				image.x = tir[i].taille_sprite * tir[i].anim;
-				colorkey = SDL_MapRGB(screen->format, 255, 126, 0);
+				colorkey = SDL_MapRGB(screen->format, 255, 0, 255);
 				temp = 0;
 				SDL_SetColorKey(tab_image_tir[temp], SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
 			   	SDL_BlitSurface(tab_image_tir[temp], &image, screen, &position);
@@ -698,10 +713,17 @@ void check_range(cm **carte , enn *ennemis , sh *tirs)
 					{
 						if (sqrt(pow(carte[i][j].tr.c.x - ennemis[x].c.x, 2) + pow(carte[i][j].tr.c.y - ennemis[x].c.y, 2)) <= carte[i][j].tr.range)
 						{
-							if (carte[i][j].tr.timer >= carte[i][j].tr.cooldown)
+							if (check_tir_dmg_suffisant(ennemis , x , tirs) == 0)
 							{
-								spawn_tir(tirs ,x , &carte[i][j].tr);
+								float angle = calcul_angle_tour(carte[i][j].tr.c.x , carte[i][j].tr.c.y , ennemis[x].c.x , ennemis[x].c.y , carte[i][j].tr.taille_sprite , ennemis[x].taille_sprite);
+								anim_tour(&carte[i][j].tr,angle);
+								if (carte[i][j].tr.timer >= carte[i][j].tr.cooldown)
+								{
+									spawn_tir(tirs ,x , &carte[i][j].tr);
+								}
+							 	break;
 							}
+							
 						}
 					}
 				}
@@ -716,7 +738,193 @@ void timer_tours(cm **carte)
 	{
 		for (int j = 1 ; j < 16 ; j++)
 		{
-			carte[i][j].tr.timer += 1;
+			if (carte[i][j].tr.active == 1)
+				carte[i][j].tr.timer += 1;
 		}
 	}
+}
+
+float calcul_angle_tour(float x1 , float y1 , float x2,float y2 , int sprite_taille_1 , int sprite_taille_2)
+{
+	float angle = (atan2((y2 + sprite_taille_2/2 ) - (y1 + sprite_taille_1/2),(x2 + sprite_taille_2/2 ) - (x1 + sprite_taille_1/2) )/PI)*180;
+ 	angle = 0 - angle;
+	if (angle < 0 )
+		angle += 360;
+	return angle;
+}
+
+float calcul_angle_tir(float x1 , float y1 , float x2,float y2 , int sprite_taille_1 , int sprite_taille_2)
+{
+	float angle = (atan2((y2 + sprite_taille_2/2 - sprite_taille_1/2) - (y1),(x2 + sprite_taille_2/2 - sprite_taille_1/2) - (x1) )/PI)*180;
+ 	angle = 0 - angle;
+	if (angle < 0 )
+		angle += 360;
+	return angle;
+}
+
+void anim_tour(tower *tour, float angle)
+{
+	angle += 5;
+	if (angle >= 360)
+		angle -= 360;
+	angle = (int)angle;
+	int anim = angle/10;
+	tour->anim = anim;
+}
+
+void anim_tir(sh *tir)
+{
+	tir->anim += 1;
+	if (tir->anim > 17)
+		tir->anim = 0;
+}
+
+int check_tir_dmg_suffisant(enn *ennemis , int cible , sh *tirs)
+{
+	int dmg;
+	int pa = ennemis[cible].pa;
+	int pv = ennemis[cible].pv;
+	for (int i = 0 ; i < 500 ; i++)
+	{
+		if (tirs[i].cible == cible && tirs[i].active == 1)
+		{
+			dmg = tirs[i].dmg;
+			dmg -= pa;
+			if (dmg < 0)
+				dmg = 0;
+			pv -= dmg;
+		}
+	}
+	return pv <= 0;
+}
+
+void barre_vie_ennemi(enn ennemi , SDL_Surface *screen)
+{
+			double taille;
+			SDL_Rect position;
+			SDL_Surface *rectVi;
+			taille = (ennemi.taille_sprite/8)*6;
+			rectVi = SDL_CreateRGBSurface(SDL_HWSURFACE, (int)taille , 4 , 32 , 0 , 0, 0, 0);
+			SDL_FillRect(rectVi , NULL , SDL_MapRGB(screen->format, 255 , 0 , 0));
+			position.x = ennemi.c.x + ennemi.taille_sprite/8;
+			position.y = ennemi.c.y + 4;
+			SDL_BlitSurface(rectVi, NULL, screen, &position);
+			taille = ((float)ennemi.pv/ ennemi.pv_max) * (ennemi.taille_sprite/8)*6;
+			rectVi = SDL_CreateRGBSurface(SDL_HWSURFACE, (int)taille , 4 , 32 , 0 , 0, 0, 0);
+			SDL_FillRect(rectVi , NULL , SDL_MapRGB(screen->format, 0 , 255 , 0));
+			SDL_BlitSurface(rectVi, NULL, screen, &position);
+			SDL_FreeSurface(rectVi);
+
+		
+}
+
+void barre_vie_ennemis(enn *ennemis , SDL_Surface *screen)
+{
+	for (int i = 0 ; i < 200 ; i++)
+	{
+		if (ennemis[i].active == 1)
+			barre_vie_ennemi(ennemis[i] , screen);
+	}
+}
+
+void affichage_cursor(SDL_Surface *cursor_image , coor cursor , SDL_Surface *screen)
+{
+	SDL_Rect position;
+	position.x = cursor.x;
+	position.y = cursor.y;
+	int colorkey = SDL_MapRGB(screen->format, 255, 0, 255);
+	SDL_SetColorKey(cursor_image, SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
+	SDL_BlitSurface(cursor_image , NULL , screen , &position);
+}
+
+void selection(cm **carte, int x , int y , cm **select)
+{
+	int i ,j ;
+	i = (int)y/48;
+	j = (int)x/48;
+	printf("i = %d , j = %d\n",i , j);
+	*(select) = &(carte[i][j]);
+}
+
+void deselection(cm **select)
+{
+	*(select) = NULL;
+}
+
+void ecrire_texte(TTF_Font *police , coor lieu , SDL_Surface *screen , char *texte ,SDL_Color color )
+{
+	SDL_Surface *image = TTF_RenderText_Blended(police , texte , color);
+	SDL_Rect position;
+	position.x = lieu.x;
+	position.y = lieu.y;
+	SDL_BlitSurface(image, NULL, screen, &position);
+	SDL_FreeSurface(image);
+}
+
+void ecrire_info_case_select(cm *select , TTF_Font *police  , SDL_Surface *screen  ,SDL_Color color )
+{
+	char text[100];
+	if (!(select == NULL))
+	{
+		coor lieu = {836,20};
+		switch(select->type){
+		case 0:
+			sprintf(text,"%s","Type : HERBE");
+			break;
+		case 1:
+			sprintf(text,"%s","Type : MONTAGNE");
+			break;
+		case 2:
+			sprintf(text,"%s","Type : CHEMIN");
+			break;
+		case 3:
+			sprintf(text,"%s","Type : EAU");
+			break;
+		case 4:
+			sprintf(text,"%s","Type : DEBUT");
+			break;
+		case 5:	
+			sprintf(text,"%s","Type : FIN");
+			break;
+		default:
+			break;
+		}
+		ecrire_texte(police , lieu , screen , text , color);
+		if (select->type == 0)
+		{
+			lieu.y = 50;
+			sprintf(text , "%s" , "TOUR : ");
+			if (select->tr.active == 0)
+			{
+				strcat(text,"NON ACTIVE");
+			}
+			else
+			{
+				strcat(text,"ACTIVE");
+			}
+			ecrire_texte(police , lieu , screen , text , color);
+			if (select->tr.active == 1)
+			{
+				lieu.y = 70;
+				sprintf(text , "%s%d","NIVEAU : ",select->tr.level);
+				ecrire_texte(police , lieu , screen , text , color);
+				sprintf(text , "%s%d" , "DEGATS : ",select->tr.dmg);
+				lieu.y = 90;
+				ecrire_texte(police , lieu , screen , text , color);
+				
+			}
+		}
+		
+	}
+
+		
+	
+}
+
+void affichage_fond_info_case(SDL_Surface *fond , SDL_Surface *screen)
+{
+	SDL_Rect position;
+	position.x = 816;
+	position.y = 0;
+	SDL_BlitSurface(fond , NULL , screen , &position);
 }
