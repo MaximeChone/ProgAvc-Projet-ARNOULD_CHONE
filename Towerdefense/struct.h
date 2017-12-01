@@ -56,6 +56,8 @@ struct ennemi
 	int v; //vitesse de l'ennemi
 	int anim;//animation actuelle
 	int taille_sprite;
+	int lvl;
+	int dmg;
 };
 
 typedef struct ennemi enn;
@@ -72,3 +74,15 @@ struct shoot
 };
 
 typedef struct shoot sh;
+
+struct vague
+{
+	int lvl;
+	int nb_soldat;
+	int nb_tank;
+	int temps_spawn;
+	int timer_spawn;
+	int temps_avant_deb;
+};
+
+typedef struct vague vague;	

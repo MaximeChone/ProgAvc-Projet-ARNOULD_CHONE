@@ -355,7 +355,7 @@ void evenement_verifClavier(char* key, int *d,enn *ennemis , coor lieu)
 				}
 			if (key[tabkey[2]] == 1)
 			{
-					spawn_soldat(ennemis, lieu);
+					spawn_soldat(ennemis, lieu , 1);
 			}
 						
 		}
@@ -363,7 +363,7 @@ void evenement_verifClavier(char* key, int *d,enn *ennemis , coor lieu)
 
 void init_ennemis(enn *ennemis)
 {
-	for (int i=0 ; i< 200 ; i++)
+	for (int i=0 ; i< 600 ; i++)
 	{
 	    ennemis[i].active = 0;
 	}
@@ -416,7 +416,7 @@ void ennemi_moove(enn *ennemi , coor *chemin)
 
 void ennemis_moove(enn *ennemis , coor *chemin)
 {
-	for (int i = 0; i < 200 ; i++)
+	for (int i = 0; i < 600 ; i++)
 		{
 			if (ennemis[i].active == 1)
 				{
@@ -434,7 +434,7 @@ void affichage_ennemi(enn *ennemis , SDL_Surface **tab_image_ennemis , SDL_Surfa
 	int temp;
 	position.x = 0;
 	position.y = 0;
-	for (int i = 0; i < 200 ; i++)
+	for (int i = 0; i < 600 ; i++)
 		{
 			if (ennemis[i].active == 1)
 			{
@@ -505,13 +505,16 @@ void anim_ennemi_gauche(enn *ennemi)
 	}
 }
 
-void spawn_soldat(enn *ennemis , coor lieu)
+
+void spawn_soldat(enn *ennemis , coor lieu , int lvl)
 {
 	int i = 0;
-	while (i < 200 && ennemis[i].active != 0)
+	while (i < 600 && ennemis[i].active != 0)
 	{
 		i++;
 	}
+	printf("bjr = %d\n",i);
+	ennemis[i].lvl = lvl;
 	ennemis[i].active = 1;
 	ennemis[i].type = 0;
 	ennemis[i].c.x = lieu.x;
@@ -519,10 +522,11 @@ void spawn_soldat(enn *ennemis , coor lieu)
 	ennemis[i].anim = 0;
 	ennemis[i].chem = 0;
 	ennemis[i].v = 2;
-	ennemis[i].pv = 4;
-	ennemis[i].pv_max = 4;
+	ennemis[i].pv = calc_pv_soldat(lvl);
+	ennemis[i].pv_max = calc_pv_soldat(lvl);
 	ennemis[i].pa = 0;
 	ennemis[i].taille_sprite = 48;
+	ennemis[i].dmg = 1;
 }
 
 void spawn_tour_lvl_1(tower *tour)
@@ -602,17 +606,19 @@ tour->taille_sprite = 0;
 
 void supp_ennemi(enn *ennemi)
 {
-  ennemi->active = 0;
-  ennemi->type = 0;
-  ennemi->c.x = 0;
-  ennemi->c.y = 0;
-  ennemi->anim = 0;
-  ennemi->chem = 0;
-  ennemi->v = 0;
-  ennemi->pv = 0;
-  ennemi->pa = 0;
+	ennemi->active = 0;
+	ennemi->type = 0;
+	ennemi->c.x = 0;
+	ennemi->c.y = 0;
+	ennemi->anim = 0;
+	ennemi->chem = 0;
+	ennemi->v = 0;
+	ennemi->pv = 0;
+	ennemi->pa = 0;
 	ennemi->taille_sprite = 0;
 	ennemi->pv_max = 0;
+	ennemi->lvl = 0;
+	ennemi->dmg = 0;
 }
 
 void supp_tir(sh *tir)
@@ -627,6 +633,14 @@ void supp_tir(sh *tir)
 	tir->taille_sprite = 0;
 }
 
+int calc_pv_soldat(int lvl)
+{
+	if (lvl <= 0)
+		return 0;
+	if (lvl == 1)
+		return 4;
+	return calc_pv_soldat(lvl - 1)/4 + calc_pv_soldat(lvl - 1);
+}
 void tir_moove(sh *tir , enn *ennemis)
 {
 	if (ennemis[tir->cible].active == 0)
@@ -690,7 +704,7 @@ void damage(int dmg , enn *ennemi)
 
 void check_vie(enn *ennemis)
 {
-	for (int i = 0 ; i < 200 ; i++)
+	for (int i = 0 ; i < 600 ; i++)
 	{
 		if(ennemis[i].active == 1 && ennemis[i].pv <= 0)
 		{
@@ -707,7 +721,7 @@ void check_range(cm **carte , enn *ennemis , sh *tirs)
 		{
 			if (carte[i][j].tr.active == 1)
 			{
-				for (int x = 0 ; x < 200 ; x++)
+				for (int x = 0 ; x < 600 ; x++)
 				{
 					if (ennemis[x].active == 1)
 					{
@@ -803,13 +817,13 @@ void barre_vie_ennemi(enn ennemi , SDL_Surface *screen)
 			double taille;
 			SDL_Rect position;
 			SDL_Surface *rectVi;
-			taille = (ennemi.taille_sprite/8)*6;
+			taille = (ennemi.taille_sprite/2);
 			rectVi = SDL_CreateRGBSurface(SDL_HWSURFACE, (int)taille , 4 , 32 , 0 , 0, 0, 0);
 			SDL_FillRect(rectVi , NULL , SDL_MapRGB(screen->format, 255 , 0 , 0));
-			position.x = ennemi.c.x + ennemi.taille_sprite/8;
+			position.x = ennemi.c.x + ennemi.taille_sprite/4;
 			position.y = ennemi.c.y + 4;
 			SDL_BlitSurface(rectVi, NULL, screen, &position);
-			taille = ((float)ennemi.pv/ ennemi.pv_max) * (ennemi.taille_sprite/8)*6;
+			taille = ((float)ennemi.pv/ ennemi.pv_max) * (ennemi.taille_sprite/2);
 			rectVi = SDL_CreateRGBSurface(SDL_HWSURFACE, (int)taille , 4 , 32 , 0 , 0, 0, 0);
 			SDL_FillRect(rectVi , NULL , SDL_MapRGB(screen->format, 0 , 255 , 0));
 			SDL_BlitSurface(rectVi, NULL, screen, &position);
@@ -820,7 +834,7 @@ void barre_vie_ennemi(enn ennemi , SDL_Surface *screen)
 
 void barre_vie_ennemis(enn *ennemis , SDL_Surface *screen)
 {
-	for (int i = 0 ; i < 200 ; i++)
+	for (int i = 0 ; i < 600 ; i++)
 	{
 		if (ennemis[i].active == 1)
 			barre_vie_ennemi(ennemis[i] , screen);
@@ -928,3 +942,53 @@ void affichage_fond_info_case(SDL_Surface *fond , SDL_Surface *screen)
 	position.y = 0;
 	SDL_BlitSurface(fond , NULL , screen , &position);
 }
+
+int check_pv_joueur(int pv)
+{
+	if (pv <= 0)
+		return 0;
+	return 1;
+}
+
+void dmg_joueur(int *vie , enn *ennemi , coor lieu)
+{
+	if (ennemi->c.x >= lieu.x && ennemi->c.y >=lieu.y && ennemi->c.x < lieu.x + 48 && ennemi->c.y < lieu.y +48)
+	{
+		*vie -= ennemi->dmg;
+		supp_ennemi(ennemi);
+	}
+}
+
+void check_pos_ennemis(enn *ennemis , int *vie , cm **carte)
+{
+	coor lieu = {(emplacementFin(carte)%17)*48 , (emplacementFin(carte)/17)*48};
+	for (int i = 0 ; i <600 ; i++)
+	{
+		dmg_joueur(vie , &ennemis[i] , lieu);
+	}
+}
+
+int calcul_longueur_chemin(coor *chemin)
+{
+	int i = 0;
+	while (chemin[i].x != -1 || chemin[i].y != -1)
+	{
+		i++;
+	}
+	return i;
+}
+
+void creation_vague(vague *vag , coor *chemin)
+{
+	int longueur = calcul_longueur_chemin(chemin);
+	for (int i = 0 ; i < 10 ; i ++)
+	{
+		vag[i].lvl = i + 1;
+		vag[i].nb_soldat = (3 * longueur) - (3*longueur)/4;
+		vag[i].nb_tank = (3*longueur)/4;
+		vag[i].temps_spawn = 20 - vag[i].lvl/2;
+		vag[i].timer_spawn = 0;
+		vag[i].temps_avant_deb = 1000;
+	}
+}
+

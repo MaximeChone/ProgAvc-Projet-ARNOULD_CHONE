@@ -39,7 +39,7 @@ void anim_ennemi_gauche(enn *ennemi);//change l'animation de l'ennemi vers la ga
 void anim_tour(tower *tour, float angle);//change l'animation de la tour selon l'angle
 void anim_tir(sh *tir);//change l'animation du tir selon l'angle
 
-void spawn_soldat(enn *ennemis , coor lieu);//fait apparaite un soldat au lieu indiqué
+void spawn_soldat(enn *ennemis , coor lieu , int lvl);//fait apparaite un soldat au lieu indiqué
 void spawn_tour_lvl_1(tower *tour);//fait apparaitre une tour de niveau 1
 void spawn_tir(sh *tirs , int cible , tower *tour);//fait apparaitre un tir sur la tour indiqué
 
@@ -74,3 +74,10 @@ void deselection(cm **select);//déselectionne la case
 void ecrire_texte(TTF_Font *police , coor lieu , SDL_Surface *screen , char *texte ,SDL_Color color );
 void ecrire_info_case_select(cm *select , TTF_Font *police  , SDL_Surface *screen ,SDL_Color color );
 
+int calc_pv_soldat(int lvl);
+
+int check_pv_joueur(int pv);
+void dmg_joueur(int *vie , enn *ennemi , coor lieu);
+void check_pos_ennemis(enn *ennemis , int *vie , cm **carte);
+int calcul_longueur_chemin(coor *chemin);
+void creation_vague(vague *vag , coor *chemin);

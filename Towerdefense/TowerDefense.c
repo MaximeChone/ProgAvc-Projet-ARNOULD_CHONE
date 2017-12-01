@@ -19,7 +19,7 @@ int main(int argc,  char *argv[])
 
 	ini_chemin(chemin);
 
-	enn ennemis[200];
+	enn ennemis[600];
 	init_ennemis(ennemis);
 
 	sh tirs[500];
@@ -52,7 +52,7 @@ int main(int argc,  char *argv[])
 	tab_image_ennemis[0] = SDL_DisplayFormat(temp7);
 	temp8 = SDL_LoadBMP("bullet.bmp");
 	tab_image_tir[0] = SDL_DisplayFormat(temp8);
-	temp9 = SDL_LoadBMP("tower_1.bmp");
+	temp9 = SDL_LoadBMP("Tower.bmp");
 	tab_image_tour[0] = SDL_DisplayFormat(temp9);
 	
 	cm **carte = malloc(sizeof(struct case_map*) *17);
@@ -66,12 +66,14 @@ int main(int argc,  char *argv[])
 
 	int possible_chemin = verifChemin(carte);
 	defchemin(carte , emplacementDebut(carte)/17 , emplacementDebut(carte)%17 ,'e',chemin ,0);
-	spawn_soldat(ennemis , chemin[0]);
+	spawn_soldat(ennemis , chemin[0] , 1);
 	spawn_tour_lvl_1(&carte[12][6].tr);
 	spawn_tour_lvl_1(&carte[13][6].tr);
 
 	SDL_Color color = {255,255,255};
-	while (gameover != 1 && possible_chemin == 1)
+	int pv;
+	pv = 15;
+	while (!(gameover) && possible_chemin && check_pv_joueur(pv))
 		{
 			evenement_clavier(key,&gameover,&cursor , &select , carte);
 			if (select != NULL)
@@ -97,6 +99,7 @@ int main(int argc,  char *argv[])
 			tirs_moove(tirs , ennemis);
 
 			check_vie(ennemis);
+			check_pos_ennemis(ennemis ,&pv ,carte);
 
 			SDL_UpdateRect(screen, 0, 0, 0, 0);
 			SDL_Delay(d);
@@ -119,6 +122,8 @@ int main(int argc,  char *argv[])
 	SDL_FreeSurface(temp7);
 	SDL_FreeSurface(temp8);
 	SDL_FreeSurface(temp9);
+	SDL_FreeSurface(fond_image);
+	SDL_FreeSurface(cursor_image);
 	TTF_CloseFont(police);
 	TTF_Quit();
 	SDL_Quit();
