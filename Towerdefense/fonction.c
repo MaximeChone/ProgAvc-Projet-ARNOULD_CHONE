@@ -513,7 +513,6 @@ void spawn_soldat(enn *ennemis , coor lieu , int lvl)
 	{
 		i++;
 	}
-	printf("bjr = %d\n",i);
 	ennemis[i].lvl = lvl;
 	ennemis[i].active = 1;
 	ennemis[i].type = 0;
@@ -531,14 +530,131 @@ void spawn_soldat(enn *ennemis , coor lieu , int lvl)
 
 void spawn_tour_lvl_1(tower *tour)
 {
+	tour->type = B;
 	tour->active = 1;
 	tour->dmg = 1;
 	tour->level = 1;
 	tour->taille_sprite = 48;
 	tour->anim = 0;
-	tour->range = 200;
-	tour->cooldown = 20;
+	tour->range = 225;
+	tour->cooldown = 25;
 }
+
+void spawn_tour_lvl_2(tower *tour , t_type type)
+{
+	if (tour->level == 1)
+	{
+	    tour->type = type;
+	    if (type == P)
+	    {
+		tour->dmg = 4;
+		tour->range = 250;
+		tour->cooldown = 60;
+	    }
+	    if (type == V)
+	    {
+		tour->dmg = 1;
+		tour->range = 200;
+		tour->cooldown = 15;    
+	    } 
+	    tour->level += 1;
+	    tour->anim = 0;
+	}
+}
+
+void spawn_tour_lvl_3(tower *tour , t_type type)
+{
+	if (tour->level == 2)
+	{
+	    if (type != tour->type)
+	    {
+		tour->type = H;
+		tour->dmg =  4 ;
+		tour->range = 225;
+		tour->cooldown = 20;
+	    }
+	    if (type == P)
+	    {
+		tour->type = P;
+		tour->dmg = 8;
+		tour->range = 250;
+		tour->cooldown = 40;
+	    }
+	    if (type == V)
+	    {
+		tour->type = V;
+		tour->dmg = 2;
+		tour->range = 200;
+		tour->cooldown = 10;	    
+	    }
+	    tour->level += 1;
+	    tour->anim = 0;
+	}
+}
+
+void spawn_tour_lvl_4(tower *tour , t_type type)
+{
+	if (tour->level == 3)
+	{
+	  switch(tour->type){
+	    case P:
+	      if (type == P)
+	      {
+		  tour->type = P;
+		  tour->dmg = 16;
+		  tour->range = 275;
+		  tour->cooldown = 60;
+	      }
+	      if (type == V)
+	      {	    
+		  tour->type = H;
+		  tour->dmg = 8;
+		  tour->range = 250;
+		  tour->cooldown = 20;	    
+	      }
+	      break;
+	    case V:
+	      if (type == P)
+	      {
+		  tour->type = H;
+		  tour->dmg = 4;
+		  tour->range = 200;
+		  tour->cooldown = 10;
+	      }
+	      if (type == V)
+	      {	    
+		  tour->type = V;
+		  tour->dmg = 4;
+		  tour->range = 175;
+		  tour->cooldown = 5;
+	      }
+	      break;
+	    case H:
+	      if (type == P)
+	      {
+		  tour->type = H;
+		  tour->dmg = 8;
+		  tour->range = 250;
+		  tour->cooldown = 20;	 
+	      }
+	      if (type == V)
+	      {
+		  tour->type = H;
+		  tour->dmg = 4;
+		  tour->range = 200;
+		  tour->cooldown = 10;
+	      }
+	      break;
+	    default:
+	      break;
+	  }
+	  tour->level += 1;
+	  tour->anim = 0;
+	  
+	}
+}
+	      
+	  
 
 void affichage_tour(SDL_Surface **tab_image_tour , cm **carte , SDL_Surface *screen)
 {

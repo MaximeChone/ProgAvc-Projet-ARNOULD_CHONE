@@ -1,6 +1,10 @@
 enum case_type {HERBE , MONTAGNE , CHEMIN , EAU , DEBUT , FIN};
-
 typedef enum case_type case_type;
+enum tower_type {B ,P , V , H};
+typedef enum tower_type t_type;
+enum ennemi_type {SOLDAT , TANK};
+typedef enum ennemi_type ennemi_type;
+
 
 struct coord
 {
@@ -12,6 +16,7 @@ typedef struct coord coor;
 
 struct tower
 {
+	t_type type;
 	int level; //Niveau de la tour
 	int dmg; //Dégat infligé par la tour
 	coor c; //coordonnées de la case
@@ -38,11 +43,6 @@ struct case_map
 
 
 typedef struct case_map cm;
-
-
-enum ennemi_type {SOLDAT , TANK};
-
-typedef enum ennemi_type ennemi_type;
 
 struct ennemi
 {
