@@ -355,7 +355,7 @@ void evenement_verifClavier(char* key, int *d,enn *ennemis , coor lieu)
 				}
 			if (key[tabkey[2]] == 1)
 			{
-					spawn_soldat(ennemis, lieu , 1);
+					spawn_tank(ennemis, lieu , 10);
 			}
 						
 		}
@@ -459,23 +459,37 @@ void affichage_ennemi(enn *ennemis , SDL_Surface **tab_image_ennemis , SDL_Surfa
 
 void anim_ennemi_haut(enn *ennemi)
 {
-	if (ennemi->anim == 4)
-	{
-		ennemi->anim += 1;
+	if (ennemi->type == SOLDAT)
+		{
+		if (ennemi->anim == 4)
+		{
+			ennemi->anim += 1;
+		}
+		else
+		{
+			ennemi->anim = 4;
+		}
 	}
-	else
+	if (ennemi->type == TANK)
 	{
-		ennemi->anim = 4;
+		ennemi->anim = 2;
 	}
 }
 
 void anim_ennemi_bas(enn *ennemi)
 {
-	if (ennemi->anim == 0)
-	{
-		ennemi->anim += 1;
+	if (ennemi->type == SOLDAT)
+		{
+		if (ennemi->anim == 0)
+		{
+			ennemi->anim += 1;
+		}
+		else
+		{
+			ennemi->anim = 0;
+		}
 	}
-	else
+	if (ennemi->type == TANK)
 	{
 		ennemi->anim = 0;
 	}
@@ -483,26 +497,42 @@ void anim_ennemi_bas(enn *ennemi)
 
 void anim_ennemi_droite(enn *ennemi)
 {
-	if (ennemi->anim == 2)
+	if (ennemi->type == SOLDAT)
+		{
+		if (ennemi->anim == 2)
+		{
+			ennemi->anim += 1;
+		}
+		else
+		{
+			ennemi->anim = 2;
+		}
+	 }
+	if (ennemi->type == TANK)
 	{
-		ennemi->anim += 1;
-	}
-	else
-	{
-		ennemi->anim = 2;
+		ennemi->anim = 1;
 	}
 }
 
 void anim_ennemi_gauche(enn *ennemi)
 {
-	if (ennemi->anim == 6)
-	{
-		ennemi->anim += 1;
+
+	if (ennemi->type == SOLDAT)
+		{
+		if (ennemi->anim == 6)
+		{
+			ennemi->anim += 1;
+		}
+		else
+		{
+			ennemi->anim = 6;
+		}
 	}
-	else
+	if (ennemi->type == TANK)
 	{
-		ennemi->anim = 6;
+		ennemi->anim = 3;
 	}
+		
 }
 
 
@@ -515,24 +545,45 @@ void spawn_soldat(enn *ennemis , coor lieu , int lvl)
 	}
 	ennemis[i].lvl = lvl;
 	ennemis[i].active = 1;
-	ennemis[i].type = 0;
+	ennemis[i].type = SOLDAT;
+	ennemis[i].c.x = lieu.x;
+	ennemis[i].c.y = lieu.y;
+	ennemis[i].anim = 0;
+	ennemis[i].chem = 0;
+	ennemis[i].v = 4;
+	ennemis[i].pv = calc_pv_soldat(lvl)*2;
+	ennemis[i].pv_max = calc_pv_soldat(lvl)*2;
+	ennemis[i].pa = calc_pa_soldat(lvl);
+	ennemis[i].taille_sprite = 48;
+	ennemis[i].dmg = 1;
+}
+
+void spawn_tank(enn *ennemis , coor lieu , int lvl)
+{
+	int i = 0;
+	while (i < 600 && ennemis[i].active != 0)
+	{
+		i++;
+	}
+	ennemis[i].lvl = lvl;
+	ennemis[i].active = 1;
+	ennemis[i].type = TANK;
 	ennemis[i].c.x = lieu.x;
 	ennemis[i].c.y = lieu.y;
 	ennemis[i].anim = 0;
 	ennemis[i].chem = 0;
 	ennemis[i].v = 2;
-	ennemis[i].pv = calc_pv_soldat(lvl);
-	ennemis[i].pv_max = calc_pv_soldat(lvl);
-	ennemis[i].pa = 0;
+	ennemis[i].pv = calc_pv_tank(lvl)*2;
+	ennemis[i].pv_max = calc_pv_tank(lvl)*2;
+	ennemis[i].pa = calc_pa_tank(lvl);
 	ennemis[i].taille_sprite = 48;
-	ennemis[i].dmg = 1;
+	ennemis[i].dmg = 3;
 }
-
 void spawn_tour_lvl_1(tower *tour)
 {
 	tour->type = B;
 	tour->active = 1;
-	tour->dmg = 1;
+	tour->dmg = 2;
 	tour->level = 1;
 	tour->taille_sprite = 48;
 	tour->anim = 0;
@@ -547,13 +598,13 @@ void spawn_tour_lvl_2(tower *tour , t_type type)
 	    tour->type = type;
 	    if (type == P)
 	    {
-		tour->dmg = 4;
+		tour->dmg = 8;
 		tour->range = 250;
 		tour->cooldown = 60;
 	    }
 	    if (type == V)
 	    {
-		tour->dmg = 1;
+		tour->dmg = 2;
 		tour->range = 200;
 		tour->cooldown = 15;    
 	    } 
@@ -569,21 +620,21 @@ void spawn_tour_lvl_3(tower *tour , t_type type)
 	    if (type != tour->type)
 	    {
 		tour->type = H;
-		tour->dmg =  4 ;
+		tour->dmg =  8 ;
 		tour->range = 225;
 		tour->cooldown = 20;
 	    }
 	    if (type == P)
 	    {
 		tour->type = P;
-		tour->dmg = 8;
+		tour->dmg = 16;
 		tour->range = 250;
 		tour->cooldown = 40;
 	    }
 	    if (type == V)
 	    {
 		tour->type = V;
-		tour->dmg = 2;
+		tour->dmg = 4;
 		tour->range = 200;
 		tour->cooldown = 10;	    
 	    }
@@ -601,14 +652,14 @@ void spawn_tour_lvl_4(tower *tour , t_type type)
 	      if (type == P)
 	      {
 		  tour->type = P;
-		  tour->dmg = 16;
+		  tour->dmg = 32;
 		  tour->range = 275;
 		  tour->cooldown = 60;
 	      }
 	      if (type == V)
 	      {	    
-		  tour->type = H;
-		  tour->dmg = 8;
+		  tour->type = HP;
+		  tour->dmg = 16;
 		  tour->range = 250;
 		  tour->cooldown = 20;	    
 	      }
@@ -616,15 +667,15 @@ void spawn_tour_lvl_4(tower *tour , t_type type)
 	    case V:
 	      if (type == P)
 	      {
-		  tour->type = H;
-		  tour->dmg = 4;
+		  tour->type = HV;
+		  tour->dmg = 8;
 		  tour->range = 200;
 		  tour->cooldown = 10;
 	      }
 	      if (type == V)
 	      {	    
 		  tour->type = V;
-		  tour->dmg = 4;
+		  tour->dmg = 8;
 		  tour->range = 175;
 		  tour->cooldown = 5;
 	      }
@@ -632,15 +683,15 @@ void spawn_tour_lvl_4(tower *tour , t_type type)
 	    case H:
 	      if (type == P)
 	      {
-		  tour->type = H;
-		  tour->dmg = 8;
+		  tour->type = HP;
+		  tour->dmg = 16;
 		  tour->range = 250;
 		  tour->cooldown = 20;	 
 	      }
 	      if (type == V)
 	      {
-		  tour->type = H;
-		  tour->dmg = 4;
+		  tour->type = HV;
+		  tour->dmg = 8;
 		  tour->range = 200;
 		  tour->cooldown = 10;
 	      }
@@ -677,7 +728,41 @@ void affichage_tour(SDL_Surface **tab_image_tour , cm **carte , SDL_Surface *scr
 							image.h = carte[i][j].tr.taille_sprite;
 							image.x = carte[i][j].tr.anim * carte[i][j].tr.taille_sprite;
 							colorkey = SDL_MapRGB(screen->format, 255, 0, 255);
-							temp = 0;
+							switch(carte[i][j].tr.type)
+							{
+								case P:
+									if (carte[i][j].tr.level == 2)
+										temp = 1;
+									if (carte[i][j].tr.level == 3)
+										temp = 3;
+									if (carte[i][j].tr.level == 4)
+										temp = 6;
+									break;
+								case V:
+									if (carte[i][j].tr.level == 2)
+										temp = 1;
+									if (carte[i][j].tr.level == 3)
+										temp = 5;
+									if (carte[i][j].tr.level == 4)
+										temp = 9;
+									break;
+								case H:
+									temp = 4;
+									break;
+								case HP:
+									temp = 7;
+									break;
+								case HV:
+									temp = 8;
+									break;
+								case B:
+									temp = 0;
+									break;
+								default:
+									temp = 0;
+									break;
+							}
+									
 							SDL_SetColorKey(tab_image_tour[temp], SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
 						   	SDL_BlitSurface(tab_image_tour[temp], &image, screen, &position);
 						}
@@ -757,6 +842,42 @@ int calc_pv_soldat(int lvl)
 		return 4;
 	return calc_pv_soldat(lvl - 1)/4 + calc_pv_soldat(lvl - 1);
 }
+
+int calc_pv_tank(int lvl)
+{
+	if (lvl == 10)
+		return 3 + calc_pv_tank(lvl-1);
+	if (lvl<= 0)
+		return 0;
+	if (lvl == 1)
+		return 8;
+	return calc_pv_tank(lvl -1)/4 + calc_pv_tank(lvl-1);
+}
+
+int calc_pa_tank(int lvl)
+{
+	if (lvl <= 1)
+		return 0;
+	if (lvl <= 4)
+		return 2;
+	if (lvl <= 8)
+		return 4;
+	return calc_pa_tank(lvl -1) + 1;
+}
+
+int calc_pa_soldat(int lvl)
+{
+	if (lvl <= 3)
+		return 0;
+	if (lvl <=5)
+		return 1;
+	if (lvl <= 7)
+		return 2;
+	if (lvl <= 10)
+		return 3;
+	return 0;
+}
+
 void tir_moove(sh *tir , enn *ennemis)
 {
 	if (ennemis[tir->cible].active == 0)

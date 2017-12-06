@@ -1,6 +1,6 @@
 enum case_type {HERBE , MONTAGNE , CHEMIN , EAU , DEBUT , FIN};
 typedef enum case_type case_type;
-enum tower_type {B ,P , V , H};
+enum tower_type {B ,P , V , H , HV , HP};
 typedef enum tower_type t_type;
 enum ennemi_type {SOLDAT , TANK};
 typedef enum ennemi_type ennemi_type;

@@ -40,7 +40,11 @@ void anim_tour(tower *tour, float angle);//change l'animation de la tour selon l
 void anim_tir(sh *tir);//change l'animation du tir selon l'angle
 
 void spawn_soldat(enn *ennemis , coor lieu , int lvl);//fait apparaite un soldat au lieu indiqué
+void spawn_tank(enn *ennemis , coor lieu , int lvl);
 void spawn_tour_lvl_1(tower *tour);//fait apparaitre une tour de niveau 1
+void spawn_tour_lvl_2(tower *tour , t_type type);
+void spawn_tour_lvl_3(tower *tour , t_type type);
+void spawn_tour_lvl_4(tower *tour , t_type type);
 void spawn_tir(sh *tirs , int cible , tower *tour);//fait apparaitre un tir sur la tour indiqué
 
 void affichage_fond_info_case(SDL_Surface *fond , SDL_Surface *screen);
@@ -62,9 +66,6 @@ int check_tir_dmg_suffisant(enn *ennemis , int cible , sh *tirs);//regarde si il
 
 void timer_tours(cm **carte);//incrémente de 1 le timer des tours
 
-float calcul_angle_tour(float x1 , float y1 , float x2,float y2 , int sprite_taille_1 , int sprite_taille_2);//calcul de l'angle entre le centre du sprite_taille_1 d'une tour (x1/y1) et du centre du sprite_taille_2 d'un ennemi(x2/y2) 
-float calcul_angle_tir(float x1 , float y1 , float x2,float y2 , int sprite_taille_1 , int sprite_taille_2);//calcul de l'angle entre un tir(x1/y1) et du centre du sprite_taille_2 d'un ennemi(x2/y2)
-
 void barre_vie_ennemi(enn ennemi , SDL_Surface *screen);//affiche la barre de vie d'un ennemi
 void barre_vie_ennemis(enn *ennemis , SDL_Surface *screen);//affiche les barres de vie de tous les ennemis
 
@@ -75,9 +76,15 @@ void ecrire_texte(TTF_Font *police , coor lieu , SDL_Surface *screen , char *tex
 void ecrire_info_case_select(cm *select , TTF_Font *police  , SDL_Surface *screen ,SDL_Color color );
 
 int calc_pv_soldat(int lvl);
+int calc_pv_tank(int lvl);
+int calc_pa_soldat(int lvl);
+int calc_pa_tank(int lvl);
+int calcul_longueur_chemin(coor *chemin);
+float calcul_angle_tour(float x1 , float y1 , float x2,float y2 , int sprite_taille_1 , int sprite_taille_2);//calcul de l'angle entre le centre du sprite_taille_1 d'une tour (x1/y1) et du centre du sprite_taille_2 d'un ennemi(x2/y2) 
+float calcul_angle_tir(float x1 , float y1 , float x2,float y2 , int sprite_taille_1 , int sprite_taille_2);//calcul de l'angle entre un tir(x1/y1) et du centre du sprite_taille_2 d'un ennemi(x2/y2)
 
 int check_pv_joueur(int pv);
 void dmg_joueur(int *vie , enn *ennemi , coor lieu);
 void check_pos_ennemis(enn *ennemis , int *vie , cm **carte);
-int calcul_longueur_chemin(coor *chemin);
+
 void creation_vague(vague *vag , coor *chemin);

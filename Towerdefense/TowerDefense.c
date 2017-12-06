@@ -9,7 +9,7 @@ int main(int argc,  char *argv[])
 	SDL_Surface *TabImageCase[6];
 	SDL_Surface *tab_image_ennemis[2];
 	SDL_Surface *tab_image_tir[1];
-	SDL_Surface *tab_image_tour[1];
+	SDL_Surface *tab_image_tour[10];
 
 	int d = 50;
 	char key[SDLK_LAST] = {0};
@@ -50,10 +50,20 @@ int main(int argc,  char *argv[])
 	TabImageCase[5]=SDL_DisplayFormat(temp6);
 	temp7 = SDL_LoadBMP("spriteSoldat1.bmp");
 	tab_image_ennemis[0] = SDL_DisplayFormat(temp7);
+	tab_image_ennemis[1] = SDL_DisplayFormat(SDL_LoadBMP("tank.bmp"));
 	temp8 = SDL_LoadBMP("bullet.bmp");
 	tab_image_tir[0] = SDL_DisplayFormat(temp8);
-	temp9 = SDL_LoadBMP("Tower.bmp");
+	temp9 = SDL_LoadBMP("TowerB.bmp");
 	tab_image_tour[0] = SDL_DisplayFormat(temp9);
+	tab_image_tour[1] = SDL_DisplayFormat(SDL_LoadBMP("TowerP1.bmp"));
+	tab_image_tour[2] = SDL_DisplayFormat(SDL_LoadBMP("TowerV1.bmp"));
+	tab_image_tour[3] = SDL_DisplayFormat(SDL_LoadBMP("TowerP2.bmp"));
+	tab_image_tour[4] = SDL_DisplayFormat(SDL_LoadBMP("TowerH.bmp"));
+	tab_image_tour[5] = SDL_DisplayFormat(SDL_LoadBMP("TowerV2.bmp"));
+	tab_image_tour[6] = SDL_DisplayFormat(SDL_LoadBMP("TowerP3.bmp"));
+	tab_image_tour[7] = SDL_DisplayFormat(SDL_LoadBMP("TowerHP.bmp"));
+	tab_image_tour[8] = SDL_DisplayFormat(SDL_LoadBMP("TowerHV.bmp"));
+	tab_image_tour[9] = SDL_DisplayFormat(SDL_LoadBMP("TowerV3.bmp"));
 	
 	cm **carte = malloc(sizeof(struct case_map*) *17);
 	cm *select = NULL;
@@ -69,6 +79,23 @@ int main(int argc,  char *argv[])
 	spawn_soldat(ennemis , chemin[0] , 1);
 	spawn_tour_lvl_1(&carte[12][6].tr);
 	spawn_tour_lvl_1(&carte[13][6].tr);
+	spawn_tour_lvl_2(&carte[12][6].tr,V);
+	spawn_tour_lvl_3(&carte[12][6].tr,V);
+	spawn_tour_lvl_4(&carte[12][6].tr,V);
+	spawn_tour_lvl_2(&carte[13][6].tr,P);
+	spawn_tour_lvl_3(&carte[13][6].tr,P);
+	spawn_tour_lvl_4(&carte[13][6].tr,P);
+	spawn_tour_lvl_1(&carte[10][6].tr);
+	spawn_tour_lvl_2(&carte[10][6].tr,V);
+	spawn_tour_lvl_1(&carte[9][6].tr);
+	spawn_tour_lvl_2(&carte[9][6].tr,P);
+	spawn_tour_lvl_1(&carte[11][6].tr);
+	spawn_tour_lvl_2(&carte[11][6].tr,V);
+	spawn_tour_lvl_3(&carte[11][6].tr,P);
+	spawn_tour_lvl_1(&carte[8][6].tr);
+	spawn_tour_lvl_2(&carte[8][6].tr,P);
+	spawn_tour_lvl_3(&carte[8][6].tr,P);
+	spawn_tour_lvl_4(&carte[8][6].tr,V);
 
 	SDL_Color color = {255,255,255};
 	int pv;
@@ -104,14 +131,14 @@ int main(int argc,  char *argv[])
 			SDL_UpdateRect(screen, 0, 0, 0, 0);
 			SDL_Delay(d);
 		}
-
+	printf("test : %d\n",calc_pv_tank(10));
+	printf("test : %d\n",calc_pv_soldat(10));
 	///Libération mémoire///
 	for (i=0 ; i < 17; i++)
 		free(carte[i]);
 	free(carte);
 	for (i=0 ; i < 6; i++)
 		SDL_FreeSurface(TabImageCase[i]);
-
 	SDL_FreeSurface(screen);
 	SDL_FreeSurface(temp);
 	SDL_FreeSurface(temp2);
