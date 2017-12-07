@@ -21,7 +21,7 @@ void defchemin(cm **carte , int i , int j , char sens , coor *chemin , int compt
 int emplacementFin(cm **carte);//renvoie l'emplacement de la case 'f'
 
 void evenement_verifClavier(char* key,int *d , enn *ennemis , coor lieu);//evenement clavier
-void evenement_clavier(char* keys,int *gameover,coor *cursor , cm **selec, cm **carte);//evenement clavier
+void evenement_clavier(char* keys,int *gameover,coor *cursor , cm **selec, cm **carte , int *devise);//evenement clavier
 
 void ini_chemin(coor *chemin);//initialise le tableau de coordonnées
 void init_ennemis(enn *ennemis);//initialise le tableau d'ennemis
@@ -41,10 +41,10 @@ void anim_tir(sh *tir);//change l'animation du tir selon l'angle
 
 void spawn_soldat(enn *ennemis , coor lieu , int lvl);//fait apparaite un soldat au lieu indiqué
 void spawn_tank(enn *ennemis , coor lieu , int lvl);
-void spawn_tour_lvl_1(tower *tour);//fait apparaitre une tour de niveau 1
+void spawn_tour_lvl_0(tower *tour);//fait apparaitre une tour de niveau 1
+void spawn_tour_lvl_1(tower *tour , t_type type);
 void spawn_tour_lvl_2(tower *tour , t_type type);
 void spawn_tour_lvl_3(tower *tour , t_type type);
-void spawn_tour_lvl_4(tower *tour , t_type type);
 void spawn_tir(sh *tirs , int cible , tower *tour);//fait apparaitre un tir sur la tour indiqué
 
 void affichage_fond_info_case(SDL_Surface *fond , SDL_Surface *screen);
@@ -60,9 +60,10 @@ void supp_ennemi(enn *enemi);//supprime l'ennemi
 
 void damage(int dmg , enn *ennemi);//inflige les dégats à l'ennmi
 
-void check_vie(enn *ennemis);//regarde les points de vie des ennemis et les supprimes si leurs points de vie sont inférieur à 1
+void check_vie(enn *ennemis , int *devise);//regarde les points de vie des ennemis et les supprimes si leurs points de vie sont inférieur à 1
 void check_range(cm **carte , enn *ennemis, sh *tirs);//regarde la portée des tours et tirs si son timer est bon et qu'un ennemi est dans sa portée
 int check_tir_dmg_suffisant(enn *ennemis , int cible , sh *tirs);//regarde si il y a assez de tirs en l'air pour tuer ennemis[cible]
+int check_tir_sup_pa(enn ennemi , tower tour);
 
 void timer_tours(cm **carte);//incrémente de 1 le timer des tours
 
@@ -73,7 +74,7 @@ void selection(cm **carte , int x , int y , cm **select);//selectionne une case
 void deselection(cm **select);//déselectionne la case
 
 void ecrire_texte(TTF_Font *police , coor lieu , SDL_Surface *screen , char *texte ,SDL_Color color );
-void ecrire_info_case_select(cm *select , TTF_Font *police  , SDL_Surface *screen ,SDL_Color color );
+void ecrire_info_case_select(cm *select , TTF_Font *police  , SDL_Surface *screen ,SDL_Color color ,int devise ,SDL_Surface **tab_image_info);
 
 int calc_pv_soldat(int lvl);
 int calc_pv_tank(int lvl);
@@ -88,3 +89,8 @@ void dmg_joueur(int *vie , enn *ennemi , coor lieu);
 void check_pos_ennemis(enn *ennemis , int *vie , cm **carte);
 
 void creation_vague(vague *vag , coor *chemin);
+
+void gain_auto_devise(int *devise , int *timer);
+int gain_devise_soldat(int lvl);
+int gain_devise_tank(int lvl);
+int prix_amelio(int lvl);

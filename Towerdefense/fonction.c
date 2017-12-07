@@ -289,7 +289,7 @@ void defchemin(cm **carte , int i , int j , char sens , coor *chemin , int compt
 		}
 }
 
-void evenement_clavier(char* keys,int *gameover,coor *cursor , cm **select , cm **carte)
+void evenement_clavier(char* keys,int *gameover,coor *cursor , cm **select , cm **carte , int *devise)
 {
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {
@@ -556,6 +556,7 @@ void spawn_soldat(enn *ennemis , coor lieu , int lvl)
 	ennemis[i].pa = calc_pa_soldat(lvl);
 	ennemis[i].taille_sprite = 48;
 	ennemis[i].dmg = 1;
+	ennemis[i].devise = gain_devise_soldat(lvl);
 }
 
 void spawn_tank(enn *ennemis , coor lieu , int lvl)
@@ -578,22 +579,24 @@ void spawn_tank(enn *ennemis , coor lieu , int lvl)
 	ennemis[i].pa = calc_pa_tank(lvl);
 	ennemis[i].taille_sprite = 48;
 	ennemis[i].dmg = 3;
+	ennemis[i].devise = gain_devise_tank(lvl);
 }
-void spawn_tour_lvl_1(tower *tour)
+void spawn_tour_lvl_0(tower *tour)
 {
 	tour->type = B;
 	tour->active = 1;
 	tour->dmg = 2;
-	tour->level = 1;
+	tour->level = 0;
 	tour->taille_sprite = 48;
 	tour->anim = 0;
 	tour->range = 225;
 	tour->cooldown = 25;
+	tour->amelio = prix_amelio(tour->level);
 }
 
-void spawn_tour_lvl_2(tower *tour , t_type type)
+void spawn_tour_lvl_1(tower *tour , t_type type)
 {
-	if (tour->level == 1)
+	if (tour->level == 0)
 	{
 	    tour->type = type;
 	    if (type == P)
@@ -606,18 +609,20 @@ void spawn_tour_lvl_2(tower *tour , t_type type)
 	    {
 		tour->dmg = 2;
 		tour->range = 200;
-		tour->cooldown = 15;    
+		tour->cooldown = 15;
 	    } 
 	    tour->level += 1;
 	    tour->anim = 0;
+		tour->type = type;
+		tour->amelio = prix_amelio(tour->level);
 	}
 }
 
-void spawn_tour_lvl_3(tower *tour , t_type type)
+void spawn_tour_lvl_2(tower *tour , t_type type)
 {
-	if (tour->level == 2)
+	if (tour->level == 1)
 	{
-	    if (type != tour->type)
+	    if (type == H)
 	    {
 		tour->type = H;
 		tour->dmg =  8 ;
@@ -640,12 +645,13 @@ void spawn_tour_lvl_3(tower *tour , t_type type)
 	    }
 	    tour->level += 1;
 	    tour->anim = 0;
+		tour->amelio = prix_amelio(tour->level);
 	}
 }
 
-void spawn_tour_lvl_4(tower *tour , t_type type)
+void spawn_tour_lvl_3(tower *tour , t_type type)
 {
-	if (tour->level == 3)
+	if (tour->level == 2)
 	{
 	  switch(tour->type){
 	    case P:
@@ -699,9 +705,10 @@ void spawn_tour_lvl_4(tower *tour , t_type type)
 	    default:
 	      break;
 	  }
-	  tour->level += 1;
-	  tour->anim = 0;
-	  
+		tour->level += 1;
+		tour->anim = 0;
+		tour->amelio = 0;
+
 	}
 }
 	      
@@ -731,19 +738,19 @@ void affichage_tour(SDL_Surface **tab_image_tour , cm **carte , SDL_Surface *scr
 							switch(carte[i][j].tr.type)
 							{
 								case P:
-									if (carte[i][j].tr.level == 2)
+									if (carte[i][j].tr.level == 1)
 										temp = 1;
-									if (carte[i][j].tr.level == 3)
+									if (carte[i][j].tr.level == 2)
 										temp = 3;
-									if (carte[i][j].tr.level == 4)
+									if (carte[i][j].tr.level == 3)
 										temp = 6;
 									break;
 								case V:
-									if (carte[i][j].tr.level == 2)
+									if (carte[i][j].tr.level == 1)
 										temp = 1;
-									if (carte[i][j].tr.level == 3)
+									if (carte[i][j].tr.level == 2)
 										temp = 5;
-									if (carte[i][j].tr.level == 4)
+									if (carte[i][j].tr.level == 3)
 										temp = 9;
 									break;
 								case H:
@@ -939,12 +946,13 @@ void damage(int dmg , enn *ennemi)
 		ennemi->pv -= dmg;
 }
 
-void check_vie(enn *ennemis)
+void check_vie(enn *ennemis, int *devise)
 {
 	for (int i = 0 ; i < 600 ; i++)
 	{
 		if(ennemis[i].active == 1 && ennemis[i].pv <= 0)
 		{
+			*devise += ennemis[i].devise;
 			supp_ennemi(&ennemis[i]);
 		}
 	}
@@ -964,7 +972,7 @@ void check_range(cm **carte , enn *ennemis , sh *tirs)
 					{
 						if (sqrt(pow(carte[i][j].tr.c.x - ennemis[x].c.x, 2) + pow(carte[i][j].tr.c.y - ennemis[x].c.y, 2)) <= carte[i][j].tr.range)
 						{
-							if (check_tir_dmg_suffisant(ennemis , x , tirs) == 0)
+							if (check_tir_dmg_suffisant(ennemis , x , tirs) == 0 && check_tir_sup_pa(ennemis[x] , carte[i][j].tr) == 1)
 							{
 								float angle = calcul_angle_tour(carte[i][j].tr.c.x , carte[i][j].tr.c.y , ennemis[x].c.x , ennemis[x].c.y , carte[i][j].tr.taille_sprite , ennemis[x].taille_sprite);
 								anim_tour(&carte[i][j].tr,angle);
@@ -990,7 +998,10 @@ void timer_tours(cm **carte)
 		for (int j = 1 ; j < 16 ; j++)
 		{
 			if (carte[i][j].tr.active == 1)
-				carte[i][j].tr.timer += 1;
+				{
+					if (carte[i][j].tr.timer < carte[i][j].tr.cooldown)
+						carte[i][j].tr.timer += 1;
+				}
 		}
 	}
 }
@@ -1049,6 +1060,11 @@ int check_tir_dmg_suffisant(enn *ennemis , int cible , sh *tirs)
 	return pv <= 0;
 }
 
+int check_tir_sup_pa(enn ennemi , tower tour)
+{
+	return tour.dmg - ennemi.pa > 0;
+}
+
 void barre_vie_ennemi(enn ennemi , SDL_Surface *screen)
 {
 			double taille;
@@ -1093,7 +1109,6 @@ void selection(cm **carte, int x , int y , cm **select)
 	int i ,j ;
 	i = (int)y/48;
 	j = (int)x/48;
-	printf("i = %d , j = %d\n",i , j);
 	*(select) = &(carte[i][j]);
 }
 
@@ -1112,30 +1127,35 @@ void ecrire_texte(TTF_Font *police , coor lieu , SDL_Surface *screen , char *tex
 	SDL_FreeSurface(image);
 }
 
-void ecrire_info_case_select(cm *select , TTF_Font *police  , SDL_Surface *screen  ,SDL_Color color )
+void ecrire_info_case_select(cm *select , TTF_Font *police  , SDL_Surface *screen  ,SDL_Color color,int devise , SDL_Surface **tab_image_info)
 {
+
 	char text[100];
+	sprintf(text,"Devise : %d",devise);
+	coor lieu = {823 , 750};
+	ecrire_texte(police , lieu , screen , text , color);
 	if (!(select == NULL))
 	{
-		coor lieu = {836,20};
+		lieu.x = 823;
+		lieu.y = 20;
 		switch(select->type){
 		case 0:
-			sprintf(text,"%s","Type : HERBE");
+			sprintf(text,"%s","TERRAIN : HERBE");
 			break;
 		case 1:
-			sprintf(text,"%s","Type : MONTAGNE");
+			sprintf(text,"%s","TERRAIN : MONTAGNE");
 			break;
 		case 2:
-			sprintf(text,"%s","Type : CHEMIN");
+			sprintf(text,"%s","TERRAIN : CHEMIN");
 			break;
 		case 3:
-			sprintf(text,"%s","Type : EAU");
+			sprintf(text,"%s","TERRAIN : EAU");
 			break;
 		case 4:
-			sprintf(text,"%s","Type : DEBUT");
+			sprintf(text,"%s","TERRAIN : DEBUT");
 			break;
 		case 5:	
-			sprintf(text,"%s","Type : FIN");
+			sprintf(text,"%s","TERRAIN : FIN");
 			break;
 		default:
 			break;
@@ -1143,6 +1163,7 @@ void ecrire_info_case_select(cm *select , TTF_Font *police  , SDL_Surface *scree
 		ecrire_texte(police , lieu , screen , text , color);
 		if (select->type == 0)
 		{
+			lieu.x = 823;
 			lieu.y = 50;
 			sprintf(text , "%s" , "TOUR : ");
 			if (select->tr.active == 0)
@@ -1156,16 +1177,104 @@ void ecrire_info_case_select(cm *select , TTF_Font *police  , SDL_Surface *scree
 			ecrire_texte(police , lieu , screen , text , color);
 			if (select->tr.active == 1)
 			{
+				char type[100];
+				switch (select->tr.type){
+				case P:
+					sprintf(type , "P");
+					break;
+				case V:
+					sprintf(type , "V");
+					break;
+				case H:
+					sprintf(type , "H");
+					break;
+				case HV:
+					sprintf(type , "HV");
+					break;
+				case HP:
+					sprintf(type , "HP");
+					break;
+				case B:
+					sprintf(type , "B");
+					break;
+				}
 				lieu.y = 70;
-				sprintf(text , "%s%d","NIVEAU : ",select->tr.level);
+				sprintf(text , "NIVEAU : %s%d",type,select->tr.level);
 				ecrire_texte(police , lieu , screen , text , color);
+
 				sprintf(text , "%s%d" , "DEGATS : ",select->tr.dmg);
 				lieu.y = 90;
 				ecrire_texte(police , lieu , screen , text , color);
+
+				lieu.y = 110;
+				sprintf(text , "%s%d" , "CHARGEMENT : ",select->tr.timer);
+				ecrire_texte(police , lieu , screen , text , color);
+
+				lieu.y = 130;
+				sprintf(text , "%s%d" , "PORTEE : ",select->tr.range);
+				ecrire_texte(police , lieu , screen , text , color);
+
+				lieu.x = 823;
+				lieu.y = 562;
+				sprintf(text , "AMELIORATIONS");
+				ecrire_texte(police , lieu , screen , text , color);
+			if (select->tr.level !=3)
+			{
+
+				int colorkey = SDL_MapRGB(screen->format, 255, 0, 255);
+				SDL_Rect position;
+
+
+
+
+
+				position.x = 823;
+				position.y = 650;
+				SDL_SetColorKey(tab_image_info[1], SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
+			   	SDL_BlitSurface(tab_image_info[1], NULL, screen, &position);
+				lieu.x = 880;
+				lieu.y = 655;
+				sprintf(text , "VITESSE");
+				ecrire_texte(police , lieu , screen , text , color);
+				lieu.x = 880;
+				lieu.y = 675;
+				sprintf(text , "%s%d","Prix : ",select->tr.amelio);
+				ecrire_texte(police , lieu , screen , text , color);
+
+
+				position.x = 823;
+				position.y = 582;
+				SDL_SetColorKey(tab_image_info[0], SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
+			   	SDL_BlitSurface(tab_image_info[0], NULL, screen, &position);
+				lieu.x = 880;
+				lieu.y = 587;
+				sprintf(text , "PUISSANCE");
+				ecrire_texte(police , lieu , screen , text , color);
+				lieu.x = 880;
+				lieu.y = 607;
+				sprintf(text , "%s%d","Prix : ",select->tr.amelio);
+				ecrire_texte(police , lieu , screen , text , color);
+			}
+			else
+			{
+				lieu.x = 823;
+				lieu.y = 602;
+				sprintf(text , "TOUR NIVEAU MAX");
+				ecrire_texte(police , lieu , screen , text , color);
+			}
+				
+			
 				
 			}
 		}
 		
+	}
+	else
+	{
+		lieu.x = 823;
+		lieu.y = 20;
+		sprintf(text , "AUCUNE SELECTION");
+		ecrire_texte(police , lieu , screen , text , color);
 	}
 
 		
@@ -1223,9 +1332,46 @@ void creation_vague(vague *vag , coor *chemin)
 		vag[i].lvl = i + 1;
 		vag[i].nb_soldat = (3 * longueur) - (3*longueur)/4;
 		vag[i].nb_tank = (3*longueur)/4;
-		vag[i].temps_spawn = 20 - vag[i].lvl/2;
+		vag[i].temps_spawn = 15 - vag[i].lvl/2;
 		vag[i].timer_spawn = 0;
 		vag[i].temps_avant_deb = 1000;
 	}
 }
 
+void gain_auto_devise(int *devise , int *timer)
+{
+	if (*timer <= 0)
+	{
+		*devise += 10;
+		*timer = 10;
+	}
+	else
+	{
+		*timer -= 1;
+	}
+}
+
+int gain_devise_soldat(int lvl)
+{
+	if (lvl <= 0)
+		return 0;
+	if (lvl == 1)
+		return 10;
+	return gain_devise_soldat(lvl -1) + (gain_devise_soldat(lvl-1)/3);
+}
+
+int gain_devise_tank(int lvl)
+{
+	if (lvl <= 0)
+		return 0;
+	if (lvl == 1)
+		return 20;
+	return gain_devise_soldat(lvl -1) + (gain_devise_soldat(lvl-1)/3);
+}
+
+int prix_amelio(int lvl)
+{
+	if (lvl <= 0)
+		return 700;
+	return 850 + prix_amelio(lvl - 1);
+}

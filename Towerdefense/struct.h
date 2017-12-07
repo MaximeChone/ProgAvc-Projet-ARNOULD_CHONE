@@ -26,6 +26,7 @@ struct tower
 	int range;
 	int cooldown;
 	int timer;
+	int amelio;
 };
 
 typedef struct tower tower;
@@ -58,6 +59,7 @@ struct ennemi
 	int taille_sprite;
 	int lvl;
 	int dmg;
+	int devise;
 };
 
 typedef struct ennemi enn;
