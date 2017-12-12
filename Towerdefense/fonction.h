@@ -6,9 +6,9 @@
 #include <SDL_ttf.h>
 #define PI 3.14159265358979323846
 
-void lectureNiveau(cm **carte);//prend le fichier niveau , le lit , remplis les types des cases
+int lectureNiveau(cm **carte);//prend en param le tableau qui définit la carte ,ouvre le fichier niveau , le lit , remplis les types des cases , renvoit un int selon l'erreur
 
-int verifChemin(cm **carte);//vérifie si le chemin est valide 
+int verifChemin(cm **carte);//prend en param le tableau qui définit la carte , vérifie si le chemin est valide , renvoit un int selon l'erreur
 int sous_verifchemin_1(cm **carte, int i , int j);//sous fonction de verifChemin
 int sous_verifchemin_2(cm **carte, int i , int j);//sous fonction de verifChemin
 int sous_verifchemin_3(cm **carte, int i , int j);//sous fonction de verifChemin
@@ -16,12 +16,12 @@ int sous_verifchemin_4(cm **carte, int i , int j);//sous fonction de verifChemin
 int sous_verifchemin_5(cm **carte, int i , int j);//sous fonction de verifChemin
 int sous_verifchemin_6(cm **carte, int i , int j);//sous fonction de verifChemin
 
-int emplacementDebut(cm **carte);//renvoie l'emplacement de la case 'd'
-void defchemin(cm **carte , int i , int j , char sens , coor *chemin , int compteurChemin);//entre chaque coordonnées du chemin dans un tableau de coordonnées
+int emplacementDebut(cm **carte);//prend en param le tableau qui définit la carte , renvoie l'emplacement de la case 'd'
+void defchemin(cm **carte , int i , int j , char sens , coor *chemin , int compteurChemin);//prend en param le tableau qui définit la carte , i , j , sens de la dernière case (ex :'d' pour droite , 'g' pour gauche ...) , le tableau de coordonnées chemin , le compteur : entre les coordonnées des cases chemins dans le tableau chemins
 int emplacementFin(cm **carte);//renvoie l'emplacement de la case 'f'
 
-void evenement_verifClavier(char* key,int *d);//evenement clavier
-void evenement_clavier(char* keys,int *gameover,coor *cursor , cm **selec, cm **carte , int *devise , int *pause , int *exit);//evenement clavier
+void evenement_verifClavier(char* key,int *d);//prend en param le tableau des noms des touches claviers en SDL , d le délais , effectu les actions selon les evenement clavier
+void evenement_clavier(char* keys,int *gameover,coor *cursor , cm **selec, cm **carte , int *devise , int *pause , int *exit);//prend en param , le tableau des noms des touches claviers en SDL , le int gameover pour arreter le jeu , cursor pour avoir en permanence les coordonnées de la souris , la selection du joueur (après avoir cliqué sur une case, NULL sinon) , tableau qui définit la carte , int devise = aux points
 
 void ini_chemin(coor *chemin);//initialise le tableau de coordonnées
 void init_ennemis(enn *ennemis);//initialise le tableau d'ennemis
@@ -115,3 +115,7 @@ int check_victoire(int pv , vague *vag , enn *ennemis);
 int check_defaite(int pv);
 
 void tour_danse(cm **carte, int *timer);
+
+void erreurs(int lecture , int chemin);
+
+int focus(enn *ennemis , tower tr, sh *tirs);

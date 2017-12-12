@@ -86,20 +86,23 @@ int main(int argc,  char *argv[])
 		carte[i] = malloc(sizeof(struct case_map) * 17);
 	}
 
-	lectureNiveau(carte);
-
-	int possible_chemin = verifChemin(carte);
-	defchemin(carte , emplacementDebut(carte)/17 , emplacementDebut(carte)%17 ,'e',chemin ,0);
-
+	int lecture = lectureNiveau(carte);
+	int possible_chemin = 0;
+	if ( lecture == 1)
+	{
+		possible_chemin = verifChemin(carte);
+		if (possible_chemin)
+			defchemin(carte , emplacementDebut(carte)/17 , emplacementDebut(carte)%17 ,'e',chemin ,0);
+	}
 	SDL_Color vert = {0,255,0};
 	SDL_Color rouge = {255,0,0};
 	SDL_Color bleu = {0,0,255};
 	SDL_Color blanc = {255,255,255};
 
 	int pv = 15;
-	int devise = 150000;
+	int devise = 1500;
 	int timer_devise = 10;
-	int niveau_vague = 9;
+	int niveau_vague = 0;
 	int pause = 0;
 	int gameover = 0;
 	int exit = 0;
@@ -108,7 +111,7 @@ int main(int argc,  char *argv[])
 	vague vag[10];
 	creation_vague(vag);
 
-	while (!(exit) && possible_chemin)
+	while (!(exit) && possible_chemin == 1)
 		{
 
 			affichage_fond_info_case(fond_image , screen);
@@ -126,13 +129,14 @@ int main(int argc,  char *argv[])
 				evenement_clavier(key,&gameover,&cursor , &select , carte , &devise , &pause , &exit);
 				SDL_UpdateRect(screen, 0, 0, 0, 0);
 			}
-			while ((check_defaite(pv) && !(exit)) || gameover == 1)
+			while ((check_defaite(pv) && !(exit)) || gameover == 1)//boucle défaite
 			{
+				gameover = 1;
 				ecrire_defaite(police_big ,screen ,blanc);
 				evenement_clavier(key,&gameover,&cursor , &select , carte , &devise , &pause , &exit);
 				SDL_UpdateRect(screen, 0, 0, 0, 0);
 			}
-			while (check_victoire(pv , vag , ennemis) && !(exit))
+			while (check_victoire(pv , vag , ennemis) && !(exit))//boucle victoire
 			{
 				gameover = 1;
 
@@ -143,6 +147,7 @@ int main(int argc,  char *argv[])
 				ecrire_victoire(police_big ,screen ,blanc);
 				SDL_UpdateRect(screen, 0, 0, 0, 0);
 			}
+
 			evenement_clavier(key,&gameover,&cursor , &select , carte , &devise , &pause , &exit);
 			evenement_verifClavier(key,&d);
 			defile_vague(vag , ennemis , &niveau_vague , chemin);
@@ -166,6 +171,7 @@ int main(int argc,  char *argv[])
 			SDL_Delay(d);
 		}
 
+	erreurs(lecture , possible_chemin);
 	coor lieu = {0,0};
 	ecrire_texte(police_big , lieu , screen , "defaite" , blanc);		
 	///Libération mémoire///
