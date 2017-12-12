@@ -20,8 +20,8 @@ int emplacementDebut(cm **carte);//renvoie l'emplacement de la case 'd'
 void defchemin(cm **carte , int i , int j , char sens , coor *chemin , int compteurChemin);//entre chaque coordonnées du chemin dans un tableau de coordonnées
 int emplacementFin(cm **carte);//renvoie l'emplacement de la case 'f'
 
-void evenement_verifClavier(char* key,int *d , enn *ennemis , coor lieu);//evenement clavier
-void evenement_clavier(char* keys,int *gameover,coor *cursor , cm **selec, cm **carte , int *devise);//evenement clavier
+void evenement_verifClavier(char* key,int *d);//evenement clavier
+void evenement_clavier(char* keys,int *gameover,coor *cursor , cm **selec, cm **carte , int *devise , int *pause , int *exit);//evenement clavier
 
 void ini_chemin(coor *chemin);//initialise le tableau de coordonnées
 void init_ennemis(enn *ennemis);//initialise le tableau d'ennemis
@@ -41,7 +41,7 @@ void anim_tir(sh *tir);//change l'animation du tir selon l'angle
 
 void spawn_soldat(enn *ennemis , coor lieu , int lvl);//fait apparaite un soldat au lieu indiqué
 void spawn_tank(enn *ennemis , coor lieu , int lvl);
-void spawn_tour_lvl_0(tower *tour);//fait apparaitre une tour de niveau 1
+void spawn_tour_lvl_0(tower *tour);//fait apparaitre une tour de niveau 0
 void spawn_tour_lvl_1(tower *tour , t_type type);
 void spawn_tour_lvl_2(tower *tour , t_type type);
 void spawn_tour_lvl_3(tower *tour , t_type type);
@@ -54,7 +54,7 @@ void afficheMap(SDL_Surface **TabImageCase,cm **carte,SDL_Surface *screen);//aff
 void affichage_tir(SDL_Surface **tab_image_tir , sh *tir , SDL_Surface *screen);//affiche les tirs
 void affichage_cursor(SDL_Surface *cursor_image , coor cursor, SDL_Surface *screen);//affiche le curseur
 
-void supp_tour_lvl_1(tower *tour);//supprime la tour de niveau 1
+void supp_tour(tower *tour , int *devise);
 void supp_tir(sh *tir);//supprime le tir
 void supp_ennemi(enn *enemi);//supprime l'ennemi
 
@@ -74,7 +74,10 @@ void selection(cm **carte , int x , int y , cm **select);//selectionne une case
 void deselection(cm **select);//déselectionne la case
 
 void ecrire_texte(TTF_Font *police , coor lieu , SDL_Surface *screen , char *texte ,SDL_Color color );
-void ecrire_info_case_select(cm *select , TTF_Font *police  , SDL_Surface *screen ,SDL_Color color ,int devise ,SDL_Surface **tab_image_info);
+void ecrire_info_case_select(cm *select , TTF_Font *police  , SDL_Surface *screen ,SDL_Color vert ,SDL_Color bleu, SDL_Color rouge ,int devise ,SDL_Surface **tab_image_info, vague *vag , enn *ennemis , int num_vague,int pv_joueur);
+void ecrire_pause(TTF_Font *police , SDL_Surface *screen ,SDL_Color color);
+void ecrire_victoire(TTF_Font *police , SDL_Surface *screen ,SDL_Color color);
+void ecrire_defaite(TTF_Font *police , SDL_Surface *screen ,SDL_Color color);
 
 int calc_pv_soldat(int lvl);
 int calc_pv_tank(int lvl);
@@ -83,14 +86,32 @@ int calc_pa_tank(int lvl);
 int calcul_longueur_chemin(coor *chemin);
 float calcul_angle_tour(float x1 , float y1 , float x2,float y2 , int sprite_taille_1 , int sprite_taille_2);//calcul de l'angle entre le centre du sprite_taille_1 d'une tour (x1/y1) et du centre du sprite_taille_2 d'un ennemi(x2/y2) 
 float calcul_angle_tir(float x1 , float y1 , float x2,float y2 , int sprite_taille_1 , int sprite_taille_2);//calcul de l'angle entre un tir(x1/y1) et du centre du sprite_taille_2 d'un ennemi(x2/y2)
+int calcul_vente(int lvl);
 
 int check_pv_joueur(int pv);
 void dmg_joueur(int *vie , enn *ennemi , coor lieu);
 void check_pos_ennemis(enn *ennemis , int *vie , cm **carte);
 
-void creation_vague(vague *vag , coor *chemin);
+void creation_vague(vague *vag);
+void defile_vague(vague *vag , enn *ennemis , int *niveau_vague , coor *chemin);
 
-void gain_auto_devise(int *devise , int *timer);
+void gain_auto_devise(int *devise , int *timer, vague *vag , int niveau_vague);
 int gain_devise_soldat(int lvl);
 int gain_devise_tank(int lvl);
 int prix_amelio(int lvl);
+
+int nb_tank_restant(enn *ennemis , vague *vag , int num_vague);
+int nb_soldat_restant(enn *ennemis , vague *vag , int num_vague);
+
+void acheter_amelio_V(cm *select , int *devise);
+void acheter_amelio_P(cm *select , int *devise);
+void acheter_tour(cm *select, int *devise);
+void clic_gauche(coor cursor , cm *select , int *devise);
+
+int nb_tank_vague(int lvl);
+int nb_soldat_vague(int lvl);
+
+int check_victoire(int pv , vague *vag , enn *ennemis);
+int check_defaite(int pv);
+
+void tour_danse(cm **carte, int *timer);

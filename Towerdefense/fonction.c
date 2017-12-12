@@ -37,6 +37,8 @@ void lectureNiveau(cm **carte)
 			carte[i/17][i%17].tr.c.y = (i/17)*48;
 			carte[i/17][i%17].tr.c.x = (i%17)*48;
 			carte[i/17][i%17].tr.active = 0;
+			carte[i/17][i%17].tr.level = -1;
+			carte[i/17][i%17].tr.amelio = prix_amelio(-1);
 			carte[i/17][i%17].anim = 0;
 			carte[i/17][i%17].taille_sprite = 48;
 		
@@ -289,33 +291,55 @@ void defchemin(cm **carte , int i , int j , char sens , coor *chemin , int compt
 		}
 }
 
-void evenement_clavier(char* keys,int *gameover,coor *cursor , cm **select , cm **carte , int *devise)
+void evenement_clavier(char* keys,int *gameover,coor *cursor , cm **select , cm **carte , int *devise , int *pause , int *exit)
 {
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {
 		switch (event.type) {
-		case SDL_QUIT:
+		/*case SDL_QUIT:
 			*gameover = 1;
-			break;
+			break;*/
 		case SDL_KEYUP:
 			keys[event.key.keysym.sym] = 0;
 			break;
 		case SDL_KEYDOWN:
 			switch (event.key.keysym.sym) {
+			case SDLK_p:
+				if (*pause == 1)
+				{
+					*pause = 0;
+				}
+				else
+				{
+					*pause = 1;
+				}
+			break;
 			case SDLK_ESCAPE:
-				*gameover = 1;
+				if (*gameover == 0)
+				{
+					*gameover = 1;
+				}
+				else
+				{
+					*exit = 1;
+					*gameover = 0;
+				}
 				break;
 			default:
 				break;
 			}
 			keys[event.key.keysym.sym] = 1;
-			break;
+				break;
 		case SDL_MOUSEBUTTONDOWN:
 			switch (event.button.button){
 			case SDL_BUTTON_LEFT:
-				if (event.button.x <= 816 && event.button.y <=816)
+				if (*pause == 0 && *gameover == 0)
 				{
-					selection(carte , event.button.x , event.button.y , select);
+					if (event.button.x <= 816 && event.button.y <=816)
+					{
+						selection(carte , event.button.x , event.button.y , select);
+					}
+					clic_gauche(*cursor , *select , devise);
 				}
 				break;
 			case SDL_BUTTON_RIGHT:
@@ -331,9 +355,9 @@ void evenement_clavier(char* keys,int *gameover,coor *cursor , cm **select , cm 
 	}
 }
 
-void evenement_verifClavier(char* key, int *d,enn *ennemis , coor lieu)
+void evenement_verifClavier(char* key, int *d)
 {
-	SDLKey tabkey[3] = {SDLK_LEFT,SDLK_RIGHT,SDLK_UP}; 
+	SDLKey tabkey[4] = {SDLK_LEFT,SDLK_RIGHT,SDLK_UP}; 
 	
 	for(int i=0;i<1;i++)
 		{
@@ -355,9 +379,7 @@ void evenement_verifClavier(char* key, int *d,enn *ennemis , coor lieu)
 				}
 			if (key[tabkey[2]] == 1)
 			{
-					spawn_tank(ennemis, lieu , 10);
 			}
-						
 		}
 }
 
@@ -589,7 +611,7 @@ void spawn_tour_lvl_0(tower *tour)
 	tour->level = 0;
 	tour->taille_sprite = 48;
 	tour->anim = 0;
-	tour->range = 225;
+	tour->range = 180;
 	tour->cooldown = 25;
 	tour->amelio = prix_amelio(tour->level);
 }
@@ -602,17 +624,16 @@ void spawn_tour_lvl_1(tower *tour , t_type type)
 	    if (type == P)
 	    {
 		tour->dmg = 8;
-		tour->range = 250;
+		tour->range = 205;
 		tour->cooldown = 60;
 	    }
 	    if (type == V)
 	    {
 		tour->dmg = 2;
-		tour->range = 200;
+		tour->range = 155;
 		tour->cooldown = 15;
 	    } 
 	    tour->level += 1;
-	    tour->anim = 0;
 		tour->type = type;
 		tour->amelio = prix_amelio(tour->level);
 	}
@@ -622,29 +643,43 @@ void spawn_tour_lvl_2(tower *tour , t_type type)
 {
 	if (tour->level == 1)
 	{
-	    if (type == H)
-	    {
-		tour->type = H;
-		tour->dmg =  8 ;
-		tour->range = 225;
-		tour->cooldown = 20;
-	    }
-	    if (type == P)
-	    {
-		tour->type = P;
-		tour->dmg = 16;
-		tour->range = 250;
-		tour->cooldown = 40;
-	    }
-	    if (type == V)
-	    {
-		tour->type = V;
-		tour->dmg = 4;
-		tour->range = 200;
-		tour->cooldown = 10;	    
+		switch(tour->type){
+		case P:
+			if (type == P)
+			{
+				tour->type = P;
+				tour->dmg = 16;
+				tour->range = 205;
+				tour->cooldown = 40;
+			}
+	    	if (type == V)
+	    	{
+				tour->type = H;
+				tour->dmg =  8 ;
+				tour->range = 180;
+				tour->cooldown = 20;
+			}
+			break;
+		case V:
+			if (type == P)
+			{
+				tour->type = H;
+				tour->dmg =  8 ;
+				tour->range = 180;
+				tour->cooldown = 20;
+			}
+	    	if (type == V)
+	    	{
+				tour->type = V;
+				tour->dmg = 4;
+				tour->range = 155;
+				tour->cooldown = 10;
+			}
+			break;
+		default:
+			break;
 	    }
 	    tour->level += 1;
-	    tour->anim = 0;
 		tour->amelio = prix_amelio(tour->level);
 	}
 }
@@ -659,14 +694,14 @@ void spawn_tour_lvl_3(tower *tour , t_type type)
 	      {
 		  tour->type = P;
 		  tour->dmg = 32;
-		  tour->range = 275;
+		  tour->range = 230;
 		  tour->cooldown = 60;
 	      }
 	      if (type == V)
 	      {	    
 		  tour->type = HP;
 		  tour->dmg = 16;
-		  tour->range = 250;
+		  tour->range = 205;
 		  tour->cooldown = 20;	    
 	      }
 	      break;
@@ -675,14 +710,14 @@ void spawn_tour_lvl_3(tower *tour , t_type type)
 	      {
 		  tour->type = HV;
 		  tour->dmg = 8;
-		  tour->range = 200;
+		  tour->range = 155;
 		  tour->cooldown = 10;
 	      }
 	      if (type == V)
 	      {	    
 		  tour->type = V;
 		  tour->dmg = 8;
-		  tour->range = 175;
+		  tour->range = 130;
 		  tour->cooldown = 5;
 	      }
 	      break;
@@ -691,14 +726,14 @@ void spawn_tour_lvl_3(tower *tour , t_type type)
 	      {
 		  tour->type = HP;
 		  tour->dmg = 16;
-		  tour->range = 250;
+		  tour->range = 205;
 		  tour->cooldown = 20;	 
 	      }
 	      if (type == V)
 	      {
 		  tour->type = HV;
 		  tour->dmg = 8;
-		  tour->range = 200;
+		  tour->range = 155;
 		  tour->cooldown = 10;
 	      }
 	      break;
@@ -706,7 +741,6 @@ void spawn_tour_lvl_3(tower *tour , t_type type)
 	      break;
 	  }
 		tour->level += 1;
-		tour->anim = 0;
 		tour->amelio = 0;
 
 	}
@@ -747,7 +781,7 @@ void affichage_tour(SDL_Surface **tab_image_tour , cm **carte , SDL_Surface *scr
 									break;
 								case V:
 									if (carte[i][j].tr.level == 1)
-										temp = 1;
+										temp = 2;
 									if (carte[i][j].tr.level == 2)
 										temp = 5;
 									if (carte[i][j].tr.level == 3)
@@ -803,13 +837,18 @@ void spawn_tir(sh *tirs , int cible , tower *tour)
 	tour->timer = 0;
 }
 
-void supp_tour(tower *tour)
+void supp_tour(tower *tour , int *devise)
 {
-  tour->active = 0;
-  tour->dmg = 0;
-  tour->level = 0;
-tour->anim = 0;
-tour->taille_sprite = 0;
+    *devise += calcul_vente(tour->level);
+	tour->type = 0;
+	tour->level = -1; 
+	tour->dmg = 0;
+	tour->active = 0;
+	tour->anim = 0;
+	tour->range = 0;
+	tour->cooldown = 0;
+	tour->timer = 0;
+	tour->amelio = 0;
 }
 
 void supp_ennemi(enn *ennemi)
@@ -847,7 +886,7 @@ int calc_pv_soldat(int lvl)
 		return 0;
 	if (lvl == 1)
 		return 4;
-	return calc_pv_soldat(lvl - 1)/4 + calc_pv_soldat(lvl - 1);
+	return (calc_pv_soldat(lvl - 1)*3)/8 + calc_pv_soldat(lvl - 1);
 }
 
 int calc_pv_tank(int lvl)
@@ -858,7 +897,7 @@ int calc_pv_tank(int lvl)
 		return 0;
 	if (lvl == 1)
 		return 8;
-	return calc_pv_tank(lvl -1)/4 + calc_pv_tank(lvl-1);
+	return (calc_pv_tank(lvl -1)*3)/8 + calc_pv_tank(lvl-1);
 }
 
 int calc_pa_tank(int lvl)
@@ -1127,13 +1166,46 @@ void ecrire_texte(TTF_Font *police , coor lieu , SDL_Surface *screen , char *tex
 	SDL_FreeSurface(image);
 }
 
-void ecrire_info_case_select(cm *select , TTF_Font *police  , SDL_Surface *screen  ,SDL_Color color,int devise , SDL_Surface **tab_image_info)
+void ecrire_info_case_select(cm *select , TTF_Font *police  , SDL_Surface *screen  ,SDL_Color vert , SDL_Color bleu , SDL_Color rouge ,int devise , SDL_Surface **tab_image_info , vague *vag , enn *ennemis , int num_vague , int pv_joueur)
 {
 
 	char text[100];
+	SDL_Rect position;
+	int colorkey = SDL_MapRGB(screen->format, 255, 0, 255);
+	coor lieu = {823 , 775};
+
 	sprintf(text,"Devise : %d",devise);
-	coor lieu = {823 , 750};
-	ecrire_texte(police , lieu , screen , text , color);
+	ecrire_texte(police , lieu , screen , text , vert);
+
+	lieu.y = 795;
+	sprintf(text,"Pv du JOUEUR : %d",pv_joueur);
+	ecrire_texte(police , lieu , screen , text , rouge);
+	if (num_vague != -1)
+	{
+		if (vag[num_vague].temps_avant_deb > 0)
+		{
+			lieu.y = 180;
+			sprintf(text,"Preparation : %d",vag[num_vague].temps_avant_deb);
+			ecrire_texte(police , lieu , screen ,text , vert);
+		}
+		lieu.y = 200;
+		sprintf(text,"Vague : %d",num_vague + 1);
+		ecrire_texte(police , lieu , screen ,text , vert);
+	
+		lieu.y = 220;
+		sprintf(text,"Ennemis restants");
+		ecrire_texte(police, lieu , screen ,text , vert);
+
+		lieu.x = 833;
+		lieu.y = 235;
+		sprintf(text,"-Soldats : %d",nb_soldat_restant(ennemis , vag , num_vague));
+		ecrire_texte(police, lieu , screen ,text , vert);
+
+		lieu.y = 250;
+		sprintf(text,"-TANK : %d",nb_tank_restant(ennemis , vag , num_vague));
+		ecrire_texte(police, lieu , screen ,text , vert);
+	}
+
 	if (!(select == NULL))
 	{
 		lieu.x = 823;
@@ -1160,7 +1232,7 @@ void ecrire_info_case_select(cm *select , TTF_Font *police  , SDL_Surface *scree
 		default:
 			break;
 		}
-		ecrire_texte(police , lieu , screen , text , color);
+		ecrire_texte(police , lieu , screen , text , vert);
 		if (select->type == 0)
 		{
 			lieu.x = 823;
@@ -1174,7 +1246,7 @@ void ecrire_info_case_select(cm *select , TTF_Font *police  , SDL_Surface *scree
 			{
 				strcat(text,"ACTIVE");
 			}
-			ecrire_texte(police , lieu , screen , text , color);
+			ecrire_texte(police , lieu , screen , text , vert);
 			if (select->tr.active == 1)
 			{
 				char type[100];
@@ -1198,36 +1270,45 @@ void ecrire_info_case_select(cm *select , TTF_Font *police  , SDL_Surface *scree
 					sprintf(type , "B");
 					break;
 				}
+
+				position.x = 823;
+				position.y = 718;
+				SDL_SetColorKey(tab_image_info[3], SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
+			   	SDL_BlitSurface(tab_image_info[3], NULL, screen, &position);
+				lieu.x = 880;
+				lieu.y = 723;
+				sprintf(text , "VENTE");
+				ecrire_texte(police , lieu , screen , text , vert);
+				lieu.x = 880;
+				lieu.y = 743;
+				sprintf(text , "%s%d","GAIN : ",calcul_vente(select->tr.level));
+				ecrire_texte(police , lieu , screen , text , vert);				
+
+
+				lieu.x = 823;
 				lieu.y = 70;
 				sprintf(text , "NIVEAU : %s%d",type,select->tr.level);
-				ecrire_texte(police , lieu , screen , text , color);
+				ecrire_texte(police , lieu , screen , text , vert);
 
 				sprintf(text , "%s%d" , "DEGATS : ",select->tr.dmg);
 				lieu.y = 90;
-				ecrire_texte(police , lieu , screen , text , color);
+				ecrire_texte(police , lieu , screen , text , rouge);
 
 				lieu.y = 110;
 				sprintf(text , "%s%d" , "CHARGEMENT : ",select->tr.timer);
-				ecrire_texte(police , lieu , screen , text , color);
+				ecrire_texte(police , lieu , screen , text , bleu);
 
 				lieu.y = 130;
 				sprintf(text , "%s%d" , "PORTEE : ",select->tr.range);
-				ecrire_texte(police , lieu , screen , text , color);
+				ecrire_texte(police , lieu , screen , text , vert);
 
 				lieu.x = 823;
 				lieu.y = 562;
 				sprintf(text , "AMELIORATIONS");
-				ecrire_texte(police , lieu , screen , text , color);
+				ecrire_texte(police , lieu , screen , text , vert);
+
 			if (select->tr.level !=3)
 			{
-
-				int colorkey = SDL_MapRGB(screen->format, 255, 0, 255);
-				SDL_Rect position;
-
-
-
-
-
 				position.x = 823;
 				position.y = 650;
 				SDL_SetColorKey(tab_image_info[1], SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
@@ -1235,11 +1316,11 @@ void ecrire_info_case_select(cm *select , TTF_Font *police  , SDL_Surface *scree
 				lieu.x = 880;
 				lieu.y = 655;
 				sprintf(text , "VITESSE");
-				ecrire_texte(police , lieu , screen , text , color);
+				ecrire_texte(police , lieu , screen , text , bleu);
 				lieu.x = 880;
 				lieu.y = 675;
 				sprintf(text , "%s%d","Prix : ",select->tr.amelio);
-				ecrire_texte(police , lieu , screen , text , color);
+				ecrire_texte(police , lieu , screen , text , vert);
 
 
 				position.x = 823;
@@ -1249,23 +1330,43 @@ void ecrire_info_case_select(cm *select , TTF_Font *police  , SDL_Surface *scree
 				lieu.x = 880;
 				lieu.y = 587;
 				sprintf(text , "PUISSANCE");
-				ecrire_texte(police , lieu , screen , text , color);
+				ecrire_texte(police , lieu , screen , text , rouge);
 				lieu.x = 880;
 				lieu.y = 607;
 				sprintf(text , "%s%d","Prix : ",select->tr.amelio);
-				ecrire_texte(police , lieu , screen , text , color);
+				ecrire_texte(police , lieu , screen , text , vert);
 			}
 			else
 			{
 				lieu.x = 823;
 				lieu.y = 602;
 				sprintf(text , "TOUR NIVEAU MAX");
-				ecrire_texte(police , lieu , screen , text , color);
+				ecrire_texte(police , lieu , screen , text , vert);
 			}
 				
 			
 				
 			}
+			else
+			{
+				if (select->tr.level == -1)
+				{
+					position.x = 823;
+					position.y = 582;
+					SDL_SetColorKey(tab_image_info[2], SDL_SRCCOLORKEY | SDL_RLEACCEL, colorkey);
+				   	SDL_BlitSurface(tab_image_info[2], NULL, screen, &position);
+
+					lieu.x = 880;
+					lieu.y = 587;
+					sprintf(text , "ACHAT");
+					ecrire_texte(police , lieu , screen , text , vert);
+					lieu.x = 880;
+					lieu.y = 607;
+					sprintf(text , "%s%d","Prix : ",select->tr.amelio);
+					ecrire_texte(police , lieu , screen , text , vert);
+				}
+			}
+				
 		}
 		
 	}
@@ -1274,7 +1375,7 @@ void ecrire_info_case_select(cm *select , TTF_Font *police  , SDL_Surface *scree
 		lieu.x = 823;
 		lieu.y = 20;
 		sprintf(text , "AUCUNE SELECTION");
-		ecrire_texte(police , lieu , screen , text , color);
+		ecrire_texte(police , lieu , screen , text , vert);
 	}
 
 		
@@ -1324,30 +1425,32 @@ int calcul_longueur_chemin(coor *chemin)
 	return i;
 }
 
-void creation_vague(vague *vag , coor *chemin)
+void creation_vague(vague *vag)
 {
-	int longueur = calcul_longueur_chemin(chemin);
 	for (int i = 0 ; i < 10 ; i ++)
 	{
 		vag[i].lvl = i + 1;
-		vag[i].nb_soldat = (3 * longueur) - (3*longueur)/4;
-		vag[i].nb_tank = (3*longueur)/4;
-		vag[i].temps_spawn = 15 - vag[i].lvl/2;
+		vag[i].nb_soldat = 1;//nb_soldat_vague(vag[i].lvl);
+		vag[i].nb_tank = 1;//nb_tank_vague(vag[i].lvl);
+		vag[i].temps_spawn = 35 - 1.5 * vag[i].lvl;
 		vag[i].timer_spawn = 0;
-		vag[i].temps_avant_deb = 1000;
+		vag[i].temps_avant_deb = 200;
 	}
 }
 
-void gain_auto_devise(int *devise , int *timer)
+void gain_auto_devise(int *devise , int *timer , vague *vag , int niveau_vag)
 {
-	if (*timer <= 0)
+	if (vag[niveau_vag].temps_avant_deb == 0)
 	{
-		*devise += 10;
-		*timer = 10;
-	}
-	else
-	{
-		*timer -= 1;
+		if (*timer <= 0)
+		{
+			*devise += 10;
+			*timer = 10;
+		}
+		else
+		{
+			*timer -= 1;
+		}
 	}
 }
 
@@ -1356,7 +1459,7 @@ int gain_devise_soldat(int lvl)
 	if (lvl <= 0)
 		return 0;
 	if (lvl == 1)
-		return 10;
+		return 25;
 	return gain_devise_soldat(lvl -1) + (gain_devise_soldat(lvl-1)/3);
 }
 
@@ -1365,13 +1468,244 @@ int gain_devise_tank(int lvl)
 	if (lvl <= 0)
 		return 0;
 	if (lvl == 1)
-		return 20;
+		return 50;
 	return gain_devise_soldat(lvl -1) + (gain_devise_soldat(lvl-1)/3);
 }
 
 int prix_amelio(int lvl)
 {
 	if (lvl <= 0)
-		return 700;
-	return 850 + prix_amelio(lvl - 1);
+		return 550;
+	return 550 + prix_amelio(lvl - 1) + prix_amelio(lvl - 1)/8;
 }
+
+int nb_tank_restant(enn *ennemis , vague *vag , int num_vague)
+{
+	int nombre_tank = 0;
+	for (int i =0; i < 600; i++)
+	{
+		if (ennemis[i].active == 1 && ennemis[i].type == TANK)
+			nombre_tank++;
+	}
+	nombre_tank += vag[num_vague].nb_tank;
+	return nombre_tank;
+}
+
+int nb_soldat_restant(enn *ennemis , vague *vag , int num_vague)
+{
+	int nombre_soldat = 0;
+	for (int i =0; i < 600; i++)
+	{
+		if (ennemis[i].active == 1 && ennemis[i].type == SOLDAT)
+			nombre_soldat++;
+	}
+	nombre_soldat += vag[num_vague].nb_soldat;
+	return nombre_soldat;
+}
+
+void acheter_amelio_V(cm *select , int *devise)
+{
+	if (*devise >= select->tr.amelio)
+	{
+		*devise -= select->tr.amelio;
+		spawn_tour_lvl_3(&select->tr ,V);
+		spawn_tour_lvl_2(&select->tr ,V);
+		spawn_tour_lvl_1(&select->tr ,V);
+	}
+}
+
+void acheter_amelio_P(cm *select , int *devise)
+{
+	if (*devise >= select->tr.amelio)
+	{
+		*devise -= select->tr.amelio;
+		spawn_tour_lvl_3(&select->tr ,P);
+		spawn_tour_lvl_2(&select->tr ,P);
+		spawn_tour_lvl_1(&select->tr ,P);
+	}
+}
+
+void acheter_tour(cm *select , int *devise)
+{
+	if (*devise >= select->tr.amelio)
+	{
+		*devise -= select->tr.amelio;
+		spawn_tour_lvl_0(&select->tr);
+	}
+}
+
+void clic_gauche(coor cursor , cm *select , int *devise)
+{
+	if (select->type == 0)
+	{
+		if (select->tr.active == 0)
+		{
+			if (cursor.x >= 823 && cursor.y >= 582 && cursor.x <= 871 && cursor.y <= 630)
+			{
+				acheter_tour(select , devise);
+			}
+		}
+		else
+		{
+			if (cursor.x >= 823 && cursor.y >= 718 && cursor.x <= 871 && cursor.y <= 766)
+			{
+				supp_tour(&select->tr , devise);
+			}
+			else
+			{	
+				if(select->tr.level < 3)
+				{
+					if (cursor.x >= 823 && cursor.y >= 582 && cursor.x <= 871 && cursor.y <= 630)
+					{
+						acheter_amelio_P(select , devise);
+					}
+					if (cursor.x >= 823 && cursor.y >= 650 && cursor.x <= 871 && cursor.y <= 698)
+					{
+						acheter_amelio_V(select , devise);
+					}
+				}
+			}
+		}
+			
+	} 
+}
+
+void defile_vague(vague *vag , enn *ennemis , int *niveau_vague , coor *chemin)
+{
+	if (*niveau_vague == -1)
+		return;
+	int random = 0;
+	time_t t;
+	srand((unsigned) time(&t));
+	if (vag[*niveau_vague].temps_avant_deb > 0)
+	{
+		vag[*niveau_vague].temps_avant_deb--;
+	}
+	else
+	{
+		if (vag[*niveau_vague].timer_spawn > 0)
+		{
+			vag[*niveau_vague].timer_spawn--;
+		}
+		else
+		{
+			random = 1+(rand() % 4);
+			if(random == 4)
+			{
+				if (vag[*niveau_vague].nb_tank > 0)
+				{
+					spawn_tank(ennemis , chemin[0] , vag[*niveau_vague].lvl);
+					vag[*niveau_vague].nb_tank--;
+				}
+				else
+				{
+					if (vag[*niveau_vague].nb_soldat > 0)
+					{
+						spawn_soldat(ennemis , chemin[0] , vag[*niveau_vague].lvl);
+						vag[*niveau_vague].nb_soldat--;
+					}
+				}
+			}
+			else
+			{
+				if (vag[*niveau_vague].nb_soldat > 0)
+				{
+					spawn_soldat(ennemis , chemin[0] , vag[*niveau_vague].lvl);
+					vag[*niveau_vague].nb_soldat--;
+				}
+				else
+				{
+					if(vag[*niveau_vague].nb_tank > 0)
+					{
+						spawn_tank(ennemis , chemin[0] , vag[*niveau_vague].lvl);
+						vag[*niveau_vague].nb_tank--;
+					}
+				}
+			}
+			vag[*niveau_vague].timer_spawn = vag[*niveau_vague].temps_spawn;
+		}	
+	}
+	if (vag[*niveau_vague].nb_soldat <= 0 && vag[*niveau_vague].nb_tank <= 0)
+	{
+		if (nb_soldat_restant(ennemis , vag ,*niveau_vague) == 0 && nb_tank_restant(ennemis , vag ,*niveau_vague) == 0)
+		{
+			if (*niveau_vague != 9)
+			{
+
+					(*niveau_vague)++;
+			}
+			else
+			{
+					*niveau_vague = -1;
+			}
+		}
+	}
+}
+
+void ecrire_pause(TTF_Font *police , SDL_Surface *screen ,SDL_Color color)
+{
+	coor lieu = {408 - 517/2 , 408 - 131/2};
+	ecrire_texte(police , lieu , screen ,"pause", color);
+}
+
+int nb_tank_vague(int lvl)
+{
+	return 5 * lvl;
+}
+
+int nb_soldat_vague(int lvl)
+{
+	return 15 * lvl;
+}
+
+int calcul_vente(int lvl)
+{
+	if (lvl == 0)
+		return 500/2;
+	return calcul_vente(lvl - 1 ) + prix_amelio(lvl - 1)/2;
+}
+
+void ecrire_victoire(TTF_Font *police , SDL_Surface *screen ,SDL_Color color)
+{
+	coor lieu = {39 , 342};
+	ecrire_texte(police , lieu , screen ,"victoire", color);
+}
+
+int check_victoire(int pv , vague *vag , enn *ennemis)
+{
+	return (nb_tank_restant(ennemis , vag , 9) == 0 && nb_soldat_restant(ennemis , vag , 9) == 0 && check_pv_joueur(pv) == 1);
+}
+
+int check_defaite(int pv)
+{
+	return !(check_pv_joueur(pv));
+}
+
+void ecrire_defaite(TTF_Font *police , SDL_Surface *screen ,SDL_Color color)
+{
+	coor lieu = {65 , 342};
+	ecrire_texte(police , lieu , screen ,"defaite", color);
+}
+
+void tour_danse(cm **carte ,int *timer)
+{
+	if (*timer <= 0)
+	{
+		for (int i = 1; i < 16 ; i++)
+		{
+			for (int j = 1 ; j < 16 ; j++)
+			{
+				carte[i][j].tr.anim++;
+				if (carte[i][j].tr.anim > 35)
+					carte[i][j].tr.anim = 0;
+			}
+		}
+		*timer = 10;
+	}
+	else
+	{
+		(*timer)--;
+	}
+}
+		
+	

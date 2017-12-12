@@ -4,13 +4,13 @@
 int main(int argc,  char *argv[])
 {
 	int i;
-	int gameover = 0;
+
 	SDL_Surface *screen , *temp , *temp2 , *temp3,*temp4,*temp5 , *temp6 , *temp7 , *temp8 , *temp9 ,  *fond_image;
 	SDL_Surface *TabImageCase[6];
 	SDL_Surface *tab_image_ennemis[2];
 	SDL_Surface *tab_image_tir[1];
 	SDL_Surface *tab_image_tour[10];
-	SDL_Surface *tab_image_info[2];
+	SDL_Surface *tab_image_info[4];
 	//SDL_Surface *cursor_image;
 
 	int d = 50;
@@ -33,11 +33,13 @@ int main(int argc,  char *argv[])
 	SDL_WM_SetCaption("Tower Defense", "Tower Defense");
 
 	TTF_Font *police = TTF_OpenFont("police.ttf" , 20);
+	TTF_Font *police_big = TTF_OpenFont("police.ttf" , 200);
 	
 	screen = SDL_SetVideoMode(1000 ,816 , 0, 0);
 
 	//cursor_image = SDL_DisplayFormat(SDL_LoadBMP("cursor.bmp"));
-
+//517
+//131
 	fond_image = SDL_DisplayFormat(SDL_LoadBMP("fond_info.bmp"));
 
 	temp = SDL_LoadBMP("herbe.bmp");
@@ -74,6 +76,8 @@ int main(int argc,  char *argv[])
 
 	tab_image_info[0] = SDL_DisplayFormat(SDL_LoadBMP("up_p.bmp"));
 	tab_image_info[1] = SDL_DisplayFormat(SDL_LoadBMP("up_v.bmp"));
+	tab_image_info[2] = SDL_DisplayFormat(SDL_LoadBMP("achat.bmp"));
+	tab_image_info[3] = SDL_DisplayFormat(SDL_LoadBMP("vendre.bmp"));
 	
 	cm **carte = malloc(sizeof(struct case_map*) *17);
 	cm *select = NULL;
@@ -86,57 +90,75 @@ int main(int argc,  char *argv[])
 
 	int possible_chemin = verifChemin(carte);
 	defchemin(carte , emplacementDebut(carte)/17 , emplacementDebut(carte)%17 ,'e',chemin ,0);
-	spawn_soldat(ennemis , chemin[0] , 1);
-	spawn_tour_lvl_0(&carte[12][6].tr);
-	spawn_tour_lvl_0(&carte[13][6].tr);
-	spawn_tour_lvl_1(&carte[12][6].tr,V);
-	spawn_tour_lvl_2(&carte[12][6].tr,V);
-	spawn_tour_lvl_3(&carte[12][6].tr,V);
-	spawn_tour_lvl_1(&carte[13][6].tr,P);
-	spawn_tour_lvl_2(&carte[13][6].tr,P);
-	spawn_tour_lvl_3(&carte[13][6].tr,P);
-	spawn_tour_lvl_0(&carte[10][6].tr);
-	spawn_tour_lvl_1(&carte[10][6].tr,V);
-	spawn_tour_lvl_0(&carte[9][6].tr);
-	spawn_tour_lvl_2(&carte[9][6].tr,P);
-	spawn_tour_lvl_0(&carte[11][6].tr);
-	spawn_tour_lvl_1(&carte[11][6].tr,V);
-	spawn_tour_lvl_2(&carte[11][6].tr,P);
-	spawn_tour_lvl_0(&carte[8][6].tr);
-	spawn_tour_lvl_1(&carte[8][6].tr,P);
-	spawn_tour_lvl_2(&carte[8][6].tr,P);
-	spawn_tour_lvl_3(&carte[8][6].tr,V);
 
-	SDL_Color color = {0,255,0};
+	SDL_Color vert = {0,255,0};
+	SDL_Color rouge = {255,0,0};
+	SDL_Color bleu = {0,0,255};
+	SDL_Color blanc = {255,255,255};
+
 	int pv = 15;
-	int devise = 200;
+	int devise = 150000;
 	int timer_devise = 10;
+	int niveau_vague = 9;
+	int pause = 0;
+	int gameover = 0;
+	int exit = 0;
+	int timer_danse = 0;
 
-	while (!(gameover) && possible_chemin && check_pv_joueur(pv))
+	vague vag[10];
+	creation_vague(vag);
+
+	while (!(exit) && possible_chemin)
 		{
-			evenement_clavier(key,&gameover,&cursor , &select , carte , &devise);
-			evenement_verifClavier(key,&d,ennemis ,chemin[0]);
 
 			affichage_fond_info_case(fond_image , screen);
 			afficheMap(TabImageCase ,carte , screen);
 			affichage_ennemi(ennemis , tab_image_ennemis , screen);
 			affichage_tir(tab_image_tir , tirs , screen);
 			affichage_tour(tab_image_tour , carte , screen);
-
 	 		barre_vie_ennemis(ennemis , screen);
+			ecrire_info_case_select(select , police  , screen ,vert , bleu , rouge,devise ,tab_image_info , vag , ennemis ,niveau_vague,pv);
 
-			gain_auto_devise(&devise , &timer_devise);
+
+			while (pause == 1 && !(exit))//boucle pause
+			{
+				ecrire_pause(police_big ,screen ,blanc);
+				evenement_clavier(key,&gameover,&cursor , &select , carte , &devise , &pause , &exit);
+				SDL_UpdateRect(screen, 0, 0, 0, 0);
+			}
+			while ((check_defaite(pv) && !(exit)) || gameover == 1)
+			{
+				ecrire_defaite(police_big ,screen ,blanc);
+				evenement_clavier(key,&gameover,&cursor , &select , carte , &devise , &pause , &exit);
+				SDL_UpdateRect(screen, 0, 0, 0, 0);
+			}
+			while (check_victoire(pv , vag , ennemis) && !(exit))
+			{
+				gameover = 1;
+
+				evenement_clavier(key,&gameover,&cursor , &select , carte , &devise , &pause , &exit);
+				afficheMap(TabImageCase ,carte , screen);
+				tour_danse(carte , &timer_danse);
+				affichage_tour(tab_image_tour , carte , screen);
+				ecrire_victoire(police_big ,screen ,blanc);
+				SDL_UpdateRect(screen, 0, 0, 0, 0);
+			}
+			evenement_clavier(key,&gameover,&cursor , &select , carte , &devise , &pause , &exit);
+			evenement_verifClavier(key,&d);
+			defile_vague(vag , ennemis , &niveau_vague , chemin);
+
+
+
+			gain_auto_devise(&devise , &timer_devise , vag , niveau_vague);
 
 			//affichage_cursor(cursor_image ,cursor , screen);
-			ecrire_info_case_select(select , police  , screen ,color,devise ,tab_image_info);
+
+
 
 			check_range(carte , ennemis ,tirs);
-
 			timer_tours(carte);
-
 			ennemis_moove(ennemis , chemin);
 			tirs_moove(tirs , ennemis);
-
 			check_vie(ennemis, &devise);
 			check_pos_ennemis(ennemis ,&pv ,carte);
 
@@ -144,6 +166,8 @@ int main(int argc,  char *argv[])
 			SDL_Delay(d);
 		}
 
+	coor lieu = {0,0};
+	ecrire_texte(police_big , lieu , screen , "defaite" , blanc);		
 	///Libération mémoire///
 	for (i=0 ; i < 17; i++)
 		free(carte[i]);
@@ -156,7 +180,7 @@ int main(int argc,  char *argv[])
 		SDL_FreeSurface(tab_image_ennemis[i]);
 	for (i=0 ; i < 1 ; i++)
 		SDL_FreeSurface(tab_image_tir[i]);
-	for (i=0 ; i < 2 ; i++)
+	for (i=0 ; i < 3 ; i++)
 		SDL_FreeSurface(tab_image_info[i]);
 
 	SDL_FreeSurface(screen);
@@ -172,6 +196,7 @@ int main(int argc,  char *argv[])
 	SDL_FreeSurface(fond_image);
 	//SDL_FreeSurface(cursor_image);
 	TTF_CloseFont(police);
+	TTF_CloseFont(police_big);
 	TTF_Quit();
 	SDL_Quit();
 	return EXIT_SUCCESS;
