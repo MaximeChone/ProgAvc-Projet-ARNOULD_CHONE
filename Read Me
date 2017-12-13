@@ -1,0 +1,33 @@
+Read Me:
+
+Le fichier texte, créant la carte du jeu, a comme dimension 17 en abscisse et 17 en ordonnée.
+Elle se compose des éléments suivants: 'e', 'm', 'c', 'h', 'd', 'f', 
+qui correspondent respectivement à "eau", "montagne", "chemin", "herbe", "début", "fin".
+Il y a deux type d'ennemis, des soldats et des chars. Les soldats sont plus rapides que les chars.
+Pour que le jeu marche sans accro, il faut qu'il y ait de l'eau sur chaque bord.
+Il faut qu'il y ait un chemin continu, pas d'intersection, il devra commencer juste aprés la case "début",
+et se finira juste avant la case "fin".
+Les cases "herbe" sont les seules qui pourront accueillir des tourelles. les cases "eau" et "montagne" ne le pouront pas.
+Les ennemis apparaitront sur la case "début", parcourront le chemin, pour atteindre la case "fin".
+Si un soldat atteind la case "fin", le joueur perdra 1point de vie. Alors qu'il en perdra 3 point de vie si c'est un char.
+Le joueur débute avec 15 points de vie, et 1500 de devise (argent du jeu).
+Il y a 10 vagues, avec 15 soldats et 5 chars de plus par vague.
+On gagne des devises si on tue des ennemis. Avec ces devises, on peut acheter ou faire évoluer des tourelles.
+Pour acheter une tourelles, il faut cliquer 1 fois sur une case "herbe", et ensuite acheter une tourelles, pour faire evoluer une tourelle,
+cliquer dessus, et choisir son bonus.
+On peut vendre une tourelle, mais on ne récuperera que la moitié des devises qu'elle nous a coûté.
+Plus les bagues avancent, plus les ennemis seront resistants, ils auront un bouclier, si une tourelles n'est pas suffisament forte pour
+percer le vouclier d'un ennemis, elle ne tirera pas.
+On peut modifier la vitesse du jeu, avec les flèches directionelles, appuyer plusieurs fois, ou garder appuyé sur la flèche gauche pour
+augmenter la vitesse du jeu, et inversement avec la flèche droite.
+Une tourelle de base est équilibré, peu rapide, et peu forte. Elle peut évoluer vers 2 voies differentes, privilégier la vitesse de tire,
+ou la puissance. On peut augmenter jusqu'à trois fois la vitesse ou la puissance, mais il existe des tourelles hybrides, suivants le
+schéma ci-contre:
+
+Puissance 3	Hybride Puissance	Hybride Vitesse		Vitesse 3
+	\	/		\	/	   \	     /
+      Puissance 2	         Hybride 	    Vitesse 2
+		\	    /          \          /
+		Puissance 1		Vitesse 1
+			    \	     /
+			       Base
